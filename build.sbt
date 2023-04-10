@@ -40,7 +40,8 @@ lazy val `service-echo` = project
       Lib.logback ++
         Lib.scalaLogging ++
         Lib.config ++
-        Lib.catsEffect
+        Lib.catsEffect ++
+        Lib.fs2
   )
   .dependsOn(`lib-common-model`)
   .settings(List(Compile / mainClass := Some("storm.echo.Service")))

@@ -28,3 +28,8 @@ class EchoService(val serviceContext: ServiceContext) extends NodeService {
       }
     } yield r
 }
+
+object EchoService {
+  def instance(serviceContext: ServiceContext): EchoService =
+    new EchoService(serviceContext)
+}

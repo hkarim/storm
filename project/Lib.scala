@@ -41,6 +41,7 @@ object Lib {
 
   val fs2: Seq[ModuleID] = List(
     "co.fs2" %% "fs2-core" % Version.fs2,
+    "co.fs2" %% "fs2-io" % Version.fs2,
   )
 
 }

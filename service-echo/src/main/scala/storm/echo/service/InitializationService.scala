@@ -31,3 +31,8 @@ class InitializationService(val serviceContext: ServiceContext) extends NodeServ
     } yield r
 
 }
+
+object InitializationService {
+  def instance(serviceContext: ServiceContext): InitializationService =
+    new InitializationService(serviceContext)
+}
