@@ -28,6 +28,8 @@ object Request {
           Left(failure)
         case Some(RequestBody.Type.InitializationRequest) =>
           Decoder[InitializationRequest].apply(c)
+        case Some(RequestBody.Type.EchoRequest) =>
+          Decoder[EchoRequest].apply(c)
         case Some(otherwise) =>
           val failure = DecodingFailure.apply(
             reason = DecodingFailure.Reason.CustomReason.apply(s"unexpected body/type value `$otherwise`"),

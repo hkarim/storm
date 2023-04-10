@@ -18,7 +18,7 @@ trait NodeService {
           messageId = Some(c),
           inReplyTo = request.body.messageId,
           code = 1001,
-          text = Some(s"unable to change node state to `Initialized`, current state: `${currentState.description}`"),
+          text = Some(s"unable to process request with the current state: `${currentState.description}`"),
         )
       )
     } yield response

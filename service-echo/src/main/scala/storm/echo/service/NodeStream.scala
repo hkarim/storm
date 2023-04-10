@@ -31,6 +31,12 @@ class NodeStream(val serviceContext: ServiceContext) {
         case request: Request.EchoRequest =>
           echoService.onRequest(request)
       }
+      .evalMap { response =>
+        import io.circe.syntax.*
+        IO.pure(s"${response.asJson.noSpaces}\n")
+      }
+      .through(fs2.text.utf8.encode)
+      .through(fs2.io.stdout)
       .compile
       .drain
 
