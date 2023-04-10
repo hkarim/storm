@@ -16,6 +16,7 @@ sealed trait RequestBody extends MessageBody
 object RequestBody {
   object Type {
     final val InitializationRequest: String = "init"
+    final val EchoRequest: String = "echo"
   }
 
   case class InitializationRequest(
@@ -41,6 +42,26 @@ object RequestBody {
     )
   }
 
+  case class EchoRequest(
+    messageId: Option[Int],
+    inReplyTo: Option[Int],
+    echo: String,
+  ) extends RequestBody {
+    override final val tpe: String = Type.EchoRequest
+  }
+
+  object EchoRequest {
+    given Decoder[EchoRequest] = for {
+      messageId <- Decoder[Option[Int]].at("message_id")
+      inReplyTo <- Decoder[Option[Int]].at("in_reply_to")
+      echo <- Decoder[String].at("echo")
+    } yield EchoRequest(
+      messageId = messageId,
+      inReplyTo = inReplyTo,
+      echo = echo,
+    )
+  }
+
 }
 
 sealed trait ResponseBody extends MessageBody
@@ -49,6 +70,7 @@ object ResponseBody {
 
   object Type {
     final val InitializationResponse: String = "init_ok"
+    final val EchoResponse: String = "echo_ok"
     final val ErrorResponse: String = "error"
   }
 
@@ -64,6 +86,24 @@ object ResponseBody {
       Json.obj(
         "message_id" -> v.messageId.asJson,
         "in_reply_to" -> v.inReplyTo.asJson
+      )
+    }
+  }
+
+  case class EchoResponse(
+    messageId: Option[Int],
+    inReplyTo: Option[Int],
+    echo: String
+  ) extends ResponseBody {
+    override final val tpe: String = Type.EchoResponse
+  }
+
+  object EchoResponse {
+    given Encoder[EchoResponse] = Encoder.instance { v =>
+      Json.obj(
+        "message_id" -> v.messageId.asJson,
+        "in_reply_to" -> v.inReplyTo.asJson,
+        "echo" -> v.echo.asJson,
       )
     }
   }

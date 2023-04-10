@@ -1,14 +1,20 @@
 package storm.echo.node
 
-sealed trait NodeState
+sealed trait NodeState {
+  def description: String
+}
 
 object NodeState {
-  case object Uninitialized extends NodeState
+  case object Uninitialized extends NodeState {
+    override final val description: String = "Uninitialized"
+  }
 
   case class Initialized(
-    id: String,
-    clusterIds: List[String],
-  ) extends NodeState
+    nodeId: String,
+    nodeIds: List[String],
+  ) extends NodeState {
+    override final val description: String = "Initialized"
+  }
 }
 
 
