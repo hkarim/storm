@@ -1,7 +1,6 @@
-package storm.echo.context
+package storm.context
 
 import cats.effect.*
-import storm.echo.node.NodeState
 
 trait ServiceContext {
   def nodeState: Ref[IO, NodeState]

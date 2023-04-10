@@ -1,11 +1,10 @@
-package storm.echo.service
+package storm.service
 
 import cats.effect.*
-import storm.echo.context.ServiceContext
-import storm.echo.node.NodeState
+import storm.context.*
 import storm.event.{Request, Response, ResponseBody}
 
-class InitializationService(val serviceContext: ServiceContext) extends NodeService {
+class InitializationService(serviceContext: ServiceContext) extends NodeService(serviceContext) {
 
   def onRequest(request: Request.InitializationRequest): IO[Response] = 
     for {

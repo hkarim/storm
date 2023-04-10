@@ -1,12 +1,10 @@
-package storm.echo.service
+package storm.service
 
 import cats.effect.IO
-import storm.echo.context.ServiceContext
-import storm.echo.node.NodeState
+import storm.context.*
 import storm.event.{Request, Response, ResponseBody}
 
-trait NodeService {
-  def serviceContext: ServiceContext
+trait NodeService(val serviceContext: ServiceContext) {
 
   def reportInvalidStateError(request: Request, currentState: NodeState): IO[Response] =
     for {

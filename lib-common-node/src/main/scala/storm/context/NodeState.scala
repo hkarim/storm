@@ -1,4 +1,4 @@
-package storm.echo.node
+package storm.context
 
 sealed trait NodeState {
   def description: String

@@ -1,11 +1,12 @@
 package storm.echo.service
 
 import cats.effect.*
-import storm.echo.context.ServiceContext
-import storm.echo.node.NodeState
+import storm.context.*
 import storm.event.*
+import storm.service.NodeService
 
-class EchoService(val serviceContext: ServiceContext) extends NodeService {
+class EchoService(serviceContext: ServiceContext) extends NodeService(serviceContext) {
+
   def onRequest(request: Request.EchoRequest): IO[Response] =
     for {
       currentState <- serviceContext.nodeState.get
