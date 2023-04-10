@@ -9,3 +9,5 @@ target
 .vscode
 .env
 *.env
+opt
+store

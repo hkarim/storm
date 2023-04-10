@@ -15,7 +15,7 @@ class NodeStream(val serviceContext: ServiceContext) {
     fs2.io.stdin[IO](1024)
       .through(fs2.text.utf8.decode)
       .through(fs2.text.lines)
-      .evalMap { line =>
+      .mapAsync(32) { line =>
         for {
           json <- IO.fromEither {
             io.circe.parser.parse(line)

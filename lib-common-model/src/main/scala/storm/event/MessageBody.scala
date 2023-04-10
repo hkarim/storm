@@ -6,7 +6,7 @@ import io.circe.syntax.*
 sealed trait MessageBody {
   def tpe: String
 
-  def messageId: Option[Int]
+  def messageId: Option[Long]
 
 }
 
@@ -19,7 +19,7 @@ object RequestBody {
   }
 
   case class InitializationRequest(
-    messageId: Option[Int],
+    messageId: Option[Long],
     nodeId: String,
     nodeIds: List[String],
   ) extends RequestBody {
@@ -28,7 +28,7 @@ object RequestBody {
 
   object InitializationRequest {
     given Decoder[InitializationRequest] = for {
-      messageId <- Decoder[Option[Int]].at("msg_id")
+      messageId <- Decoder[Option[Long]].at("msg_id")
       nodeId <- Decoder[String].at("node_id")
       nodeIds <- Decoder[List[String]].at("node_ids")
     } yield InitializationRequest(
@@ -39,7 +39,7 @@ object RequestBody {
   }
 
   case class EchoRequest(
-    messageId: Option[Int],
+    messageId: Option[Long],
     echo: String,
   ) extends RequestBody {
     override final val tpe: String = Type.EchoRequest
@@ -47,7 +47,7 @@ object RequestBody {
 
   object EchoRequest {
     given Decoder[EchoRequest] = for {
-      messageId <- Decoder[Option[Int]].at("msg_id")
+      messageId <- Decoder[Option[Long]].at("msg_id")
       echo <- Decoder[String].at("echo")
     } yield EchoRequest(
       messageId = messageId,
@@ -68,8 +68,8 @@ object ResponseBody {
   }
 
   case class InitializationResponse(
-    messageId: Option[Int],
-    inReplyTo: Option[Int],
+    messageId: Option[Long],
+    inReplyTo: Option[Long],
   ) extends ResponseBody {
     override final val tpe: String = Type.InitializationResponse
   }
@@ -78,15 +78,15 @@ object ResponseBody {
     given Encoder[InitializationResponse] = Encoder.instance { v =>
       Json.obj(
         "type" -> v.tpe.asJson,
-        "message_id" -> v.messageId.asJson,
+        "msg_id" -> v.messageId.asJson,
         "in_reply_to" -> v.inReplyTo.asJson
       )
     }
   }
 
   case class EchoResponse(
-    messageId: Option[Int],
-    inReplyTo: Option[Int],
+    messageId: Option[Long],
+    inReplyTo: Option[Long],
     echo: String
   ) extends ResponseBody {
     override final val tpe: String = Type.EchoResponse
@@ -96,7 +96,7 @@ object ResponseBody {
     given Encoder[EchoResponse] = Encoder.instance { v =>
       Json.obj(
         "type" -> v.tpe.asJson,
-        "message_id" -> v.messageId.asJson,
+        "msg_id" -> v.messageId.asJson,
         "in_reply_to" -> v.inReplyTo.asJson,
         "echo" -> v.echo.asJson,
       )
@@ -104,8 +104,8 @@ object ResponseBody {
   }
 
   case class ErrorResponse(
-    messageId: Option[Int],
-    inReplyTo: Option[Int],
+    messageId: Option[Long],
+    inReplyTo: Option[Long],
     code: Int,
     text: Option[String],
   ) extends ResponseBody {
@@ -116,7 +116,7 @@ object ResponseBody {
     given Encoder[ErrorResponse] = Encoder.instance { v =>
       Json.obj(
         "type" -> v.tpe.asJson,
-        "message_id" -> v.messageId.asJson,
+        "msg_id" -> v.messageId.asJson,
         "in_reply_to" -> v.inReplyTo.asJson,
         "code" -> v.code.asJson,
         "text" -> v.text.asJson,
