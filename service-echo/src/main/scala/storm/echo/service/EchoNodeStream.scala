@@ -8,15 +8,17 @@ import storm.service.NodeStream
 
 class EchoNodeStream(serviceContext: ServiceContext) extends NodeStream[EchoRequest, EchoResponse](serviceContext) {
 
-  def onRequest(request: EchoRequest): IO[EchoResponse] =
+  def onRequest(request: EchoRequest): IO[Option[EchoResponse]] =
     serviceContext.messageCounter.getAndUpdate(_ + 1).map { c =>
-      Response[EchoResponseBody](
-        source = request.destination,
-        destination = request.source,
-        body = EchoResponseBody(
-          messageId = Some(c),
-          inReplyTo = request.body.messageId,
-          echo = request.body.echo,
+      Some(
+        Response[EchoResponseBody](
+          source = request.destination,
+          destination = request.source,
+          body = EchoResponseBody(
+            messageId = Some(c),
+            inReplyTo = request.body.messageId,
+            echo = request.body.echo,
+          )
         )
       )
     }

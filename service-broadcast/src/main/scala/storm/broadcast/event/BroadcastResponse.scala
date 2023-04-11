@@ -41,7 +41,7 @@ object BroadcastResponseBody {
   case class Read(
     messageId: Option[Long],
     inReplyTo: Option[Long],
-    messages: List[Long],
+    messages: List[Int],
   ) extends BroadcastResponseBody {
     override final val tpe: String = "read_ok"
   }

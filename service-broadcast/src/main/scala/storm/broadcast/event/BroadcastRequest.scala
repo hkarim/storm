@@ -1,6 +1,7 @@
 package storm.broadcast.event
 
-import io.circe.{Decoder, DecodingFailure}
+import io.circe.*
+import io.circe.syntax.*
 import storm.model.*
 
 type BroadcastRequest = Request[BroadcastRequestBody]
@@ -25,16 +26,25 @@ object BroadcastRequestBody {
 
   case class Broadcast(
     messageId: Option[Long],
-    message: Long,
+    message: Int,
   ) extends BroadcastRequestBody {
     override final val tpe: String = "broadcast"
   }
 
   object Broadcast {
+    given Encoder[Broadcast] =
+      Encoder.instance[Broadcast] { v =>
+        Json.obj(
+          "type" -> v.tpe.asJson,
+          "msg_id" -> v.messageId.asJson,
+          "message" -> v.message.asJson,
+        )
+      }
+      
     given Decoder[Broadcast] =
       for {
         messageId <- Decoder[Option[Long]].at("msg_id")
-        message   <- Decoder[Long].at("message")
+        message   <- Decoder[Int].at("message")
       } yield Broadcast(
         messageId = messageId,
         message = message,

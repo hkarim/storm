@@ -3,6 +3,6 @@ opt/maelstrom/maelstrom \
 test \
 -w broadcast \
 --bin service-broadcast/target/universal/stage/bin/service-broadcast \
---node-count 1 \
---time-limit 20 \
+--node-count 5 \
+--time-limit 10 \
 --rate 10

@@ -1,6 +1,7 @@
 package storm.model
 
-import io.circe.Decoder
+import io.circe.*
+import io.circe.syntax.*
 
 trait RequestBody {
   def tpe: String
@@ -14,6 +15,15 @@ case class Request[+A <: RequestBody](
 )
 
 object Request {
+
+  given [A <: RequestBody: Encoder]: Encoder[Request[A]] =
+    Encoder.instance[Request[A]] { v =>
+      Json.obj(
+        "src" -> v.source.asJson,
+        "dest" -> v.destination.asJson,
+        "body" -> v.body.asJson,
+      )
+    }
 
   given [A <: RequestBody: Decoder]: Decoder[Request[A]] =
     for {

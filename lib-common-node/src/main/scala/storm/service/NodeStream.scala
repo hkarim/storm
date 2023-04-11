@@ -8,7 +8,7 @@ import storm.model.*
 
 trait NodeStream[Rq, Rs](val serviceContext: ServiceContext) {
 
-  def onRequest(request: Rq): IO[Rs]
+  def onRequest(request: Rq): IO[Option[Rs]]
 
   private def onInit(json: Json): IO[Json] =
     for {
@@ -55,16 +55,17 @@ trait NodeStream[Rq, Rs](val serviceContext: ServiceContext) {
       }
 
   private def mainStream(using Decoder[Rq], Encoder[Rs]): IO[Unit] =
-    fs2.io.stdin[IO](1024)
+    fs2.io.stdin[IO](2048)
       .through(fs2.text.utf8.decode)
       .through(fs2.text.lines)
-      .mapAsync(32) {
+      .mapAsync(64) {
         parse
       }
-      .mapAsync(32) {
+      .mapAsync(64) {
         onRequest
       }
-      .mapAsync(32) {
+      .collect { case Some(v) => v }
+      .mapAsync(64) {
         json
       }
       .through(fs2.text.utf8.encode)
