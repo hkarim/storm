@@ -9,11 +9,10 @@ class EchoServiceContext(
   val messageCounter: Ref[IO, Long],
 ) extends ServiceContext
 
-
 object EchoServiceContext {
   def run: IO[Unit] =
     for {
-      nodeState <- Ref.of[IO, NodeState](NodeState.Uninitialized)
+      nodeState      <- Ref.of[IO, NodeState](NodeState.Uninitialized)
       messageCounter <- Ref.of[IO, Long](1L)
       serviceContext = new EchoServiceContext(
         nodeState = nodeState,
