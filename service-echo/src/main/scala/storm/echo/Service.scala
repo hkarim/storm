@@ -1,4 +1,4 @@
-package storm
+package storm.echo
 
 import cats.effect.*
 import storm.echo.context.EchoServiceContext
