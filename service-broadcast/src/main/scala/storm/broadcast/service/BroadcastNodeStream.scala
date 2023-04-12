@@ -9,8 +9,6 @@ import storm.service.NodeStream
 
 class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStream[BroadcastRequest, BroadcastResponse](serviceContext) {
 
-  private final val id: Option[Long] = Some(-1L)
-
   def onRequest(request: BroadcastRequest): IO[Option[BroadcastResponse]] =
     request.body match {
       case BroadcastRequestBody.Broadcast(messageId, message) =>
@@ -19,9 +17,10 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
             IO.pure(None) // we shouldn't send messages that we've seen before
           else
             for {
-              _ <- serviceContext.messages.tryUpdate(ms => (ms :+ message).sorted)
+              id <- serviceContext.messageCounter.getAndUpdate(_ + 1)
+              _  <- serviceContext.messages.update(ms => (ms :+ message).sorted)
               bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
-              _ <- serviceContext.broadcastQueue.tryOffer(bm)
+              _ <- serviceContext.broadcastQueue.offer(bm)
             } yield Some(
               Response(
                 source = request.destination,
@@ -35,22 +34,25 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
         }
 
       case BroadcastRequestBody.Read(messageId) =>
-        serviceContext.messages.get.map { ms =>
-          Some(
-            Response(
-              source = request.destination,
-              destination = request.source,
-              body = BroadcastResponseBody.Read(
-                messageId = id,
-                inReplyTo = messageId,
-                messages = ms,
-              )
+        for {
+          id <- serviceContext.messageCounter.getAndUpdate(_ + 1)
+          ms <- serviceContext.messages.get
+        } yield Some(
+          Response(
+            source = request.destination,
+            destination = request.source,
+            body = BroadcastResponseBody.Read(
+              messageId = id,
+              inReplyTo = messageId,
+              messages = ms,
             )
           )
-        }
+        )
+
       case BroadcastRequestBody.Topology(messageId, topology) =>
         for {
-          _ <- serviceContext.topology.set(topology)
+          id <- serviceContext.messageCounter.getAndUpdate(_ + 1)
+          _  <- serviceContext.topology.set(topology)
         } yield Some(
           Response(
             source = request.destination,

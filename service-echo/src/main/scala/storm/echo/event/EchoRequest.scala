@@ -6,7 +6,7 @@ import storm.model.*
 type EchoRequest = Request[EchoRequestBody]
 
 case class EchoRequestBody(
-  messageId: Option[Long],
+  messageId: Long,
   echo: String
 ) extends RequestBody {
   override final val tpe: String = "echo"
@@ -15,7 +15,7 @@ case class EchoRequestBody(
 object EchoRequestBody {
   given Decoder[EchoRequestBody] =
     for {
-      messageId <- Decoder[Option[Long]].at("msg_id")
+      messageId <- Decoder[Long].at("msg_id")
       echo      <- Decoder[String].at("echo")
     } yield EchoRequestBody(
       messageId = messageId,

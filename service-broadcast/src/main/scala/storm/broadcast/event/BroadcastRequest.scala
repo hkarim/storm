@@ -27,7 +27,7 @@ object BroadcastRequestBody {
     }
 
   case class Broadcast(
-    messageId: Option[Long],
+    messageId: Long,
     message: Int,
   ) extends BroadcastRequestBody {
     override final val tpe: String = "broadcast"
@@ -45,7 +45,7 @@ object BroadcastRequestBody {
 
     given Decoder[Broadcast] =
       for {
-        messageId <- Decoder[Option[Long]].at("msg_id")
+        messageId <- Decoder[Long].at("msg_id")
         message   <- Decoder[Int].at("message")
       } yield Broadcast(
         messageId = messageId,
@@ -57,8 +57,8 @@ object BroadcastRequestBody {
   // we receive the same message as the
   // broadcast response
   case class AckBroadcast(
-    messageId: Option[Long],
-    inReplyTo: Option[Long],
+    messageId: Long,
+    inReplyTo: Long,
   ) extends BroadcastRequestBody {
     override final val tpe: String = "broadcast_ok"
   }
@@ -66,8 +66,8 @@ object BroadcastRequestBody {
   object AckBroadcast {
     given Decoder[AckBroadcast] =
       for {
-        messageId <- Decoder[Option[Long]].at("msg_id")
-        inReplyTo <- Decoder[Option[Long]].at("in_reply_to")
+        messageId <- Decoder[Long].at("msg_id")
+        inReplyTo <- Decoder[Long].at("in_reply_to")
       } yield AckBroadcast(
         messageId = messageId,
         inReplyTo = inReplyTo
@@ -75,7 +75,7 @@ object BroadcastRequestBody {
   }
 
   case class Read(
-    messageId: Option[Long],
+    messageId: Long,
   ) extends BroadcastRequestBody {
     override final val tpe: String = "read"
   }
@@ -83,14 +83,14 @@ object BroadcastRequestBody {
   object Read {
     given Decoder[Read] =
       for {
-        messageId <- Decoder[Option[Long]].at("msg_id")
+        messageId <- Decoder[Long].at("msg_id")
       } yield Read(
         messageId = messageId
       )
   }
 
   case class Topology(
-    messageId: Option[Long],
+    messageId: Long,
     topology: Map[String, List[String]],
   ) extends BroadcastRequestBody {
     override final val tpe: String = "topology"
@@ -99,7 +99,7 @@ object BroadcastRequestBody {
   object Topology {
     given Decoder[Topology] =
       for {
-        messageId <- Decoder[Option[Long]].at("msg_id")
+        messageId <- Decoder[Long].at("msg_id")
         topology  <- Decoder[Map[String, List[String]]].at("topology")
       } yield Topology(
         messageId = messageId,

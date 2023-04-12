@@ -38,7 +38,7 @@ class PublishStream(serviceContext: LocalServiceContext) {
                 source = nodeState.nodeId,
                 destination = neighbor,
                 body = BroadcastRequestBody.Broadcast(
-                  messageId = Some(c),
+                  messageId = c,
                   message = message.value,
                 )
               )

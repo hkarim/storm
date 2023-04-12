@@ -15,7 +15,7 @@ class EchoNodeStream(serviceContext: ServiceContext) extends NodeStream[EchoRequ
           source = request.destination,
           destination = request.source,
           body = EchoResponseBody(
-            messageId = Some(c),
+            messageId = c,
             inReplyTo = request.body.messageId,
             echo = request.body.echo,
           )

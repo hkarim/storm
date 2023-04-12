@@ -5,8 +5,8 @@ import io.circe.syntax.*
 
 trait ResponseBody {
   def tpe: String
-  def messageId: Option[Long]
-  def inReplyTo: Option[Long]
+  def messageId: Long // optional in the specs but we need to avoid boxing
+  def inReplyTo: Long // optional in the specs but we need to avoid boxing
 }
 
 case class Response[+A <: ResponseBody](

@@ -4,7 +4,7 @@ import io.circe.*
 import io.circe.syntax.*
 
 case class InitializationRequestBody(
-  messageId: Option[Long],
+  messageId: Long,
   nodeId: String,
   nodeIds: List[String],
 ) extends RequestBody {
@@ -14,7 +14,7 @@ case class InitializationRequestBody(
 object InitializationRequestBody {
   given Decoder[InitializationRequestBody] =
     for {
-      messageId <- Decoder[Option[Long]].at("msg_id")
+      messageId <- Decoder[Long].at("msg_id")
       nodeId    <- Decoder[String].at("node_id")
       nodeIds   <- Decoder[List[String]].at("node_ids")
     } yield InitializationRequestBody(
@@ -25,8 +25,8 @@ object InitializationRequestBody {
 }
 
 case class InitializationResponseBody(
-  messageId: Option[Long],
-  inReplyTo: Option[Long],
+  messageId: Long,
+  inReplyTo: Long,
 ) extends ResponseBody {
   override final val tpe: String = "init_ok"
 }

@@ -4,8 +4,8 @@ import io.circe.*
 import io.circe.syntax.*
 
 case class ErrorResponseBody(
-  messageId: Option[Long],
-  inReplyTo: Option[Long],
+  messageId: Long,
+  inReplyTo: Long,
   code: Int,
   text: Option[String]
 ) extends ResponseBody {
@@ -16,7 +16,7 @@ object ErrorResponseBody {
   given Encoder[ErrorResponseBody] =
     Encoder.instance[ErrorResponseBody] { v =>
       Json.obj(
-        "type"         -> v.tpe.asJson,
+        "type"        -> v.tpe.asJson,
         "msg_id"      -> v.messageId.asJson,
         "in_reply_to" -> v.inReplyTo.asJson,
         "code"        -> v.code.asJson,

@@ -18,7 +18,7 @@ class InitService(inbound: Queue[IO, Json], outbound: Queue[IO, Json]) {
         source = request.body.nodeId,
         destination = request.source,
         body = InitializationResponseBody(
-          messageId = Some(-1L),
+          messageId = -1L,
           inReplyTo = request.body.messageId,
         )
       )

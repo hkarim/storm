@@ -5,7 +5,7 @@ import io.circe.syntax.*
 
 trait RequestBody {
   def tpe: String
-  def messageId: Option[Long]
+  def messageId: Long
 }
 
 case class Request[+A <: RequestBody](

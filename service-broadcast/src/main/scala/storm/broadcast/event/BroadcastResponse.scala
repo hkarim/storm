@@ -9,7 +9,7 @@ type BroadcastResponse = Response[BroadcastResponseBody]
 sealed trait BroadcastResponseBody extends ResponseBody
 
 object BroadcastResponseBody {
-  
+
   given Encoder[BroadcastResponseBody] =
     Encoder.instance[BroadcastResponseBody] {
       case v: Broadcast =>
@@ -21,8 +21,8 @@ object BroadcastResponseBody {
     }
 
   case class Broadcast(
-    messageId: Option[Long],
-    inReplyTo: Option[Long],
+    messageId: Long,
+    inReplyTo: Long,
   ) extends BroadcastResponseBody {
     override final val tpe: String = "broadcast_ok"
   }
@@ -39,8 +39,8 @@ object BroadcastResponseBody {
   }
 
   case class Read(
-    messageId: Option[Long],
-    inReplyTo: Option[Long],
+    messageId: Long,
+    inReplyTo: Long,
     messages: Vector[Int],
   ) extends BroadcastResponseBody {
     override final val tpe: String = "read_ok"
@@ -59,8 +59,8 @@ object BroadcastResponseBody {
   }
 
   case class Topology(
-    messageId: Option[Long],
-    inReplyTo: Option[Long],
+    messageId: Long,
+    inReplyTo: Long,
   ) extends BroadcastResponseBody {
     override final val tpe: String = "topology_ok"
   }
