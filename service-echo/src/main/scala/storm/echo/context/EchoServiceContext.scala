@@ -4,10 +4,10 @@ import cats.effect.*
 import cats.effect.std.{Queue, Supervisor}
 import storm.context.{NodeState, ServiceContext}
 import storm.echo.service.EchoNodeStream
-import storm.service.StdoutStream
+import storm.service.{InitService, StdoutStream}
 
 class EchoServiceContext(
-  val nodeState: Ref[IO, NodeState],
+  val nodeState: NodeState,
   val messageCounter: Ref[IO, Long],
   val stdoutQueue: Queue[IO, String],
 ) extends ServiceContext
@@ -16,7 +16,7 @@ object EchoServiceContext {
   def run: IO[Unit] = {
     Supervisor[IO].use { supervisor =>
       for {
-        nodeState <- Ref.of[IO, NodeState](NodeState.Uninitialized)
+        nodeState <- InitService.run
         messageCounter <- Ref.of[IO, Long](1L)
         stdoutQueue <- Queue.unbounded[IO, String]
         serviceContext = new EchoServiceContext(

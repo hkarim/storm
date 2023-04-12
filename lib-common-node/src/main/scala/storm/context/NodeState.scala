@@ -1,20 +1,6 @@
 package storm.context
 
-sealed trait NodeState {
-  def description: String
-}
-
-object NodeState {
-  case object Uninitialized extends NodeState {
-    override final val description: String = "Uninitialized"
-  }
-
-  case class Initialized(
-    nodeId: String,
-    nodeIds: List[String],
-  ) extends NodeState {
-    override final val description: String = "Initialized"
-  }
-}
-
-
+case class NodeState(
+  nodeId: String,
+  nodeIds: List[String],
+)

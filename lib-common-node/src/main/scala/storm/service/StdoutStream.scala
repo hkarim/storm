@@ -8,8 +8,7 @@ class StdoutStream(queue: Queue[IO, String]) {
   def run: IO[Unit] =
     fs2.Stream
       .fromQueueUnterminated(queue)
-      .through(fs2.text.utf8.encode[IO])
-      .through(fs2.io.stdout[IO])
+      .evalMap(IO.print)
       .compile
       .drain
 

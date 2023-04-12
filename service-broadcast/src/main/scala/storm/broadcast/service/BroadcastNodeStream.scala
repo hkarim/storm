@@ -3,6 +3,7 @@ package storm.broadcast.service
 import cats.effect.*
 import storm.broadcast.event.*
 import storm.broadcast.context.*
+import storm.broadcast.model.BroadcastMessage
 import storm.model.*
 import storm.service.NodeStream
 
@@ -15,7 +16,8 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
       case BroadcastRequestBody.Broadcast(messageId, message) =>
         for {
           _ <- serviceContext.messages.tryUpdate(ms => (ms :+ message).sorted.distinct)
-          _ <- serviceContext.messageQueue.tryOffer(message)
+          bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
+          _ <- serviceContext.messageQueue.tryOffer(bm)
         } yield Some(
           Response(
             source = request.destination,
