@@ -2,6 +2,7 @@ package storm.broadcast.service
 
 import cats.effect.*
 import io.circe.*
+import io.circe.syntax.*
 import storm.broadcast.context.LocalServiceContext
 import storm.broadcast.event.BroadcastRequestBody
 import storm.broadcast.model.BroadcastMessage
@@ -17,7 +18,7 @@ class PublishStream(serviceContext: LocalServiceContext) {
       .flatMap { requests =>
         fs2.Stream
           .emits(requests)
-          .map(json)
+          .map(_.asJson)
           .evalMap(serviceContext.outbound.offer)
       }
       .compile
@@ -47,10 +48,6 @@ class PublishStream(serviceContext: LocalServiceContext) {
       }
     } yield requests
 
-  private def json[A: Encoder](model: A): String = {
-    import io.circe.syntax.*
-    s"${model.asJson.noSpaces}\n"
-  }
 }
 
 object PublishStream {
