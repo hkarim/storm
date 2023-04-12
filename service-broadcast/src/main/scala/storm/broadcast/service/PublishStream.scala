@@ -18,9 +18,9 @@ class PublishStream(serviceContext: LocalServiceContext) {
         fs2.Stream
           .emits(requests)
           .map(json)
-          //.through(fs2.text.utf8.encode[IO])
-          //.through(fs2.io.stdout[IO])
-          .evalMap(serviceContext.stdoutQueue.tryOffer)
+          // .through(fs2.text.utf8.encode[IO])
+          // .through(fs2.io.stdout[IO])
+          .evalMap(serviceContext.stdoutQueue.offer)
       }
       .compile
       .drain
