@@ -46,8 +46,9 @@ trait NodeStream[Rq, Rs](val serviceContext: ServiceContext) {
       .evalMap { json =>
         IO.pure(s"${json.noSpaces}\n")
       }
-      .through(fs2.text.utf8.encode)
-      .through(fs2.io.stdout)
+      //.through(fs2.text.utf8.encode)
+      //.through(fs2.io.stdout)
+      .evalMap(serviceContext.stdoutQueue.tryOffer)
       .compile
       .drain
       .flatMap { _ =>

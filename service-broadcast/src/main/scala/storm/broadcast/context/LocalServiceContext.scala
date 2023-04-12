@@ -5,7 +5,7 @@ import cats.effect.std.Queue
 import storm.context.ServiceContext
 
 trait LocalServiceContext extends ServiceContext {
-  def messages: Ref[IO, List[Int]]
+  def messages: Ref[IO, Vector[Int]]
   def topology: Ref[IO, Map[String, List[String]]]
-  def queue: Queue[IO, Int]
+  def messageQueue: Queue[IO, Int]
 }

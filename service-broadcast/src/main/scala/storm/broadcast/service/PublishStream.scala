@@ -12,14 +12,15 @@ class PublishStream(serviceContext: LocalServiceContext) {
 
   def run: IO[Unit] =
     fs2.Stream
-      .fromQueueUnterminated(serviceContext.queue, 2048)
-      .parEvalMapUnordered(128)(broadcast)
+      .fromQueueUnterminated(serviceContext.messageQueue, 2048)
+      .evalMap(broadcast)
       .flatMap { requests =>
         fs2.Stream
           .emits(requests)
           .map(json)
-          .through(fs2.text.utf8.encode[IO])
-          .through(fs2.io.stdout[IO])
+          //.through(fs2.text.utf8.encode[IO])
+          //.through(fs2.io.stdout[IO])
+          .evalMap(serviceContext.stdoutQueue.tryOffer)
       }
       .compile
       .drain
@@ -34,7 +35,7 @@ class PublishStream(serviceContext: LocalServiceContext) {
         case NodeState.Initialized(nodeId, _) =>
           topology.get(nodeId) match {
             case Some(neighbors) =>
-              neighbors.traverse { neighbor =>
+              neighbors.parTraverse { neighbor =>
                 for {
                   c <- serviceContext.messageCounter.getAndUpdate(_ + 1)
                 } yield Request(
