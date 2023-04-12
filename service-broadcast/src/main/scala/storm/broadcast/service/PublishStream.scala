@@ -12,7 +12,7 @@ class PublishStream(serviceContext: LocalServiceContext) {
 
   def run: IO[Unit] =
     fs2.Stream
-      .fromQueueUnterminated(serviceContext.messageQueue, 2048)
+      .fromQueueUnterminated(serviceContext.broadcastQueue, 2048)
       .evalMap(broadcast)
       .filter(_.nonEmpty)
       .flatMap { requests =>

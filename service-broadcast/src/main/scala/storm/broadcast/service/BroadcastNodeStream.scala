@@ -21,7 +21,7 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
             for {
               _ <- serviceContext.messages.tryUpdate(ms => (ms :+ message).sorted)
               bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
-              _ <- serviceContext.messageQueue.tryOffer(bm)
+              _ <- serviceContext.broadcastQueue.tryOffer(bm)
             } yield Some(
               Response(
                 source = request.destination,

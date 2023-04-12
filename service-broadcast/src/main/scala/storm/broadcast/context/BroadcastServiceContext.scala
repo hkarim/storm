@@ -15,7 +15,7 @@ class BroadcastServiceContext(
   val topology: Ref[IO, Map[String, List[String]]],
   val inbound: Queue[IO, Json],
   val outbound: Queue[IO, Json],
-  val messageQueue: Queue[IO, BroadcastMessage]
+  val broadcastQueue: Queue[IO, BroadcastMessage]
 ) extends LocalServiceContext
 
 object BroadcastServiceContext {
@@ -30,7 +30,7 @@ object BroadcastServiceContext {
         messageCounter <- Ref.of[IO, Long](1L)
         messages       <- Ref.of[IO, Vector[Int]](Vector.empty)
         topology       <- Ref.of[IO, Map[String, List[String]]](Map.empty)
-        messageQueue   <- Queue.unbounded[IO, BroadcastMessage]
+        broadcastQueue <- Queue.unbounded[IO, BroadcastMessage]
         serviceContext = new BroadcastServiceContext(
           nodeState = nodeState,
           messageCounter = messageCounter,
@@ -38,9 +38,9 @@ object BroadcastServiceContext {
           topology = topology,
           inbound = inbound,
           outbound = outbound,
-          messageQueue = messageQueue,
+          broadcastQueue = broadcastQueue,
         )
-        _              <- supervisor.supervise(PublishStream.instance(serviceContext).run)
+        _         <- supervisor.supervise(PublishStream.instance(serviceContext).run)
         broadcast <- BroadcastNodeStream.instance(serviceContext).run
       } yield broadcast
     }
