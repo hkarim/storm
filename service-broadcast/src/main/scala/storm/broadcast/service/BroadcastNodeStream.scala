@@ -21,6 +21,8 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
               _  <- serviceContext.messages.update(ms => (ms :+ message).sorted)
               bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
               _ <- serviceContext.broadcastQueue.offer(bm)
+              key = s"${request.destination}-$id"
+              _ <- serviceContext.inFlight.update(_.updated(key, bm))
             } yield Some(
               Response(
                 source = request.destination,
@@ -64,8 +66,11 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
           )
         )
 
-      case _: BroadcastRequestBody.AckBroadcast =>
-        IO.pure(None)
+      case BroadcastRequestBody.AckBroadcast(_, inReplyTo) =>
+        val key = s"${request.source}-$inReplyTo"
+        serviceContext.inFlight.update(_.removed(key)).map { _ =>
+          None
+        }
     }
 
 }

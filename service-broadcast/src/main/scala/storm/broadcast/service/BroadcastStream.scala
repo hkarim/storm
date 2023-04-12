@@ -8,7 +8,7 @@ import storm.broadcast.event.BroadcastRequestBody
 import storm.broadcast.model.BroadcastMessage
 import storm.model.Request
 
-class PublishStream(serviceContext: LocalServiceContext) {
+class BroadcastStream(serviceContext: LocalServiceContext) {
 
   def run: IO[Unit] =
     fs2.Stream
@@ -50,7 +50,7 @@ class PublishStream(serviceContext: LocalServiceContext) {
 
 }
 
-object PublishStream {
-  def instance(serviceContext: LocalServiceContext): PublishStream =
-    new PublishStream(serviceContext)
+object BroadcastStream {
+  def instance(serviceContext: LocalServiceContext): BroadcastStream =
+    new BroadcastStream(serviceContext)
 }

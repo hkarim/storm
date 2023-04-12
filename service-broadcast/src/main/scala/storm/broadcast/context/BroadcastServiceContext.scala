@@ -5,7 +5,7 @@ import cats.effect.std.{Queue, Supervisor}
 import io.circe.Json
 import storm.broadcast.model.BroadcastMessage
 import storm.context.NodeState
-import storm.broadcast.service.{BroadcastNodeStream, PublishStream}
+import storm.broadcast.service.{BroadcastNodeStream, BroadcastStream, FaultToleranceStream}
 import storm.service.{InitService, StdinStream, StdoutStream}
 
 class BroadcastServiceContext(
@@ -15,7 +15,8 @@ class BroadcastServiceContext(
   val topology: Ref[IO, Map[String, List[String]]],
   val inbound: Queue[IO, Json],
   val outbound: Queue[IO, Json],
-  val broadcastQueue: Queue[IO, BroadcastMessage]
+  val broadcastQueue: Queue[IO, BroadcastMessage],
+  val inFlight: Ref[IO, Map[String, BroadcastMessage]],
 ) extends LocalServiceContext
 
 object BroadcastServiceContext {
@@ -31,6 +32,7 @@ object BroadcastServiceContext {
         messages       <- Ref.of[IO, Vector[Int]](Vector.empty)
         topology       <- Ref.of[IO, Map[String, List[String]]](Map.empty)
         broadcastQueue <- Queue.unbounded[IO, BroadcastMessage]
+        inFlightQueue  <- Ref.of[IO, Map[String, BroadcastMessage]](Map.empty)
         serviceContext = new BroadcastServiceContext(
           nodeState = nodeState,
           messageCounter = messageCounter,
@@ -39,8 +41,10 @@ object BroadcastServiceContext {
           inbound = inbound,
           outbound = outbound,
           broadcastQueue = broadcastQueue,
+          inFlight = inFlightQueue,
         )
-        _         <- supervisor.supervise(PublishStream.instance(serviceContext).run)
+        _         <- supervisor.supervise(BroadcastStream.instance(serviceContext).run)
+        _         <- supervisor.supervise(FaultToleranceStream.instance(serviceContext).run)
         broadcast <- BroadcastNodeStream.instance(serviceContext).run
       } yield broadcast
     }

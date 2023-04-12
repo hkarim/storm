@@ -9,4 +9,5 @@ trait LocalServiceContext extends ServiceContext {
   def messages: Ref[IO, Vector[Int]]
   def topology: Ref[IO, Map[String, List[String]]]
   def broadcastQueue: Queue[IO, BroadcastMessage]
+  def inFlight: Ref[IO, Map[String, BroadcastMessage]]
 }
