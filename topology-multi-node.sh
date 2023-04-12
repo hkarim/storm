@@ -1,4 +1,5 @@
 #!/bin/zsh
+export JAVA_OPTS="-Xms1g -Xmx1g -XX:+UseParallelGC"
 opt/maelstrom/maelstrom \
 test \
 -w broadcast \

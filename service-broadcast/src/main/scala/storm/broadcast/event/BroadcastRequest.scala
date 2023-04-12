@@ -20,6 +20,8 @@ object BroadcastRequestBody {
         Decoder[Read].map(_.widen)
       case "topology" =>
         Decoder[Topology].map(_.widen)
+      case "broadcast_ok" =>
+        Decoder[AckBroadcast].map(_.widen)
       case otherwise =>
         Decoder.failed(DecodingFailure.apply(s"unrecognized broadcast request type `$otherwise`", Nil))
     }
@@ -35,12 +37,12 @@ object BroadcastRequestBody {
     given Encoder[Broadcast] =
       Encoder.instance[Broadcast] { v =>
         Json.obj(
-          "type" -> v.tpe.asJson,
-          "msg_id" -> v.messageId.asJson,
+          "type"    -> v.tpe.asJson,
+          "msg_id"  -> v.messageId.asJson,
           "message" -> v.message.asJson,
         )
       }
-      
+
     given Decoder[Broadcast] =
       for {
         messageId <- Decoder[Option[Long]].at("msg_id")
@@ -48,6 +50,27 @@ object BroadcastRequestBody {
       } yield Broadcast(
         messageId = messageId,
         message = message,
+      )
+  }
+
+  // in multi-node broadcast workload,
+  // we receive the same message as the
+  // broadcast response
+  case class AckBroadcast(
+    messageId: Option[Long],
+    inReplyTo: Option[Long],
+  ) extends BroadcastRequestBody {
+    override final val tpe: String = "broadcast_ok"
+  }
+
+  object AckBroadcast {
+    given Decoder[AckBroadcast] =
+      for {
+        messageId <- Decoder[Option[Long]].at("msg_id")
+        inReplyTo <- Decoder[Option[Long]].at("in_reply_to")
+      } yield AckBroadcast(
+        messageId = messageId,
+        inReplyTo = inReplyTo
       )
   }
 

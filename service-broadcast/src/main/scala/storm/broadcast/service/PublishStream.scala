@@ -12,8 +12,8 @@ class PublishStream(serviceContext: LocalServiceContext) {
 
   def run: IO[Unit] =
     fs2.Stream
-      .fromQueueUnterminated(serviceContext.queue, 1024)
-      .parEvalMap(64)(broadcast)
+      .fromQueueUnterminated(serviceContext.queue, 2048)
+      .parEvalMapUnordered(128)(broadcast)
       .flatMap { requests =>
         fs2.Stream
           .emits(requests)

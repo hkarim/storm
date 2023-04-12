@@ -21,7 +21,7 @@ object BroadcastServiceContext {
         messageCounter <- Ref.of[IO, Long](1L)
         messages <- Ref.of[IO, List[Int]](Nil)
         topology <- Ref.of[IO, Map[String, List[String]]](Map.empty)
-        queue <- Queue.bounded[IO, Int](64)
+        queue <- Queue.unbounded[IO, Int]
         serviceContext = new BroadcastServiceContext(
           nodeState = nodeState,
           messageCounter = messageCounter,

@@ -6,44 +6,14 @@ import storm.broadcast.context.*
 import storm.model.*
 import storm.service.NodeStream
 
-sealed trait InboundRequest {
-  def widen: InboundRequest = this
-}
-object InboundRequest {
-  import io.circe.*
-
-  given Decoder[InboundRequest] = {
-    Decoder.instance { c =>
-      c.downField("body").downField("type").as[String].flatMap {
-        case "broadcast_ok" =>
-          Decoder.const(Ignore).map(_.widen).apply(c)
-        case _ =>
-          Decoder[BroadcastRequest].map(Handle.apply).map(_.widen).apply(c)
-      }
-    }
-  }
-
-  case class Handle(delegate: BroadcastRequest) extends InboundRequest
-
-  case object Ignore extends InboundRequest
-}
-
-class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStream[InboundRequest, BroadcastResponse](serviceContext) {
-
-  def onRequest(request: InboundRequest): IO[Option[BroadcastResponse]] =
-    request match {
-      case InboundRequest.Handle(delegate) =>
-        onRequest(delegate)
-      case InboundRequest.Ignore =>
-        IO.pure(None)
-    }
+class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStream[BroadcastRequest, BroadcastResponse](serviceContext) {
 
   def onRequest(request: BroadcastRequest): IO[Option[BroadcastResponse]] =
     serviceContext.messageCounter.getAndUpdate(_ + 1).flatMap { c =>
       request.body match {
         case BroadcastRequestBody.Broadcast(messageId, message) =>
           for {
-            _ <- serviceContext.messages.update(ms => message :: ms)
+            _ <- serviceContext.messages.update(ms => (message :: ms).distinct)
             _ <- serviceContext.queue.offer(message)
           } yield Some(
             Response(
@@ -82,6 +52,9 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
               )
             )
           )
+
+        case _: BroadcastRequestBody.AckBroadcast =>
+          IO.pure(None)
       }
 
     }
