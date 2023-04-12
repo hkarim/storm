@@ -30,16 +30,18 @@ class PublishStream(serviceContext: LocalServiceContext) {
       nodeState = serviceContext.nodeState
       requests = topology.get(nodeState.nodeId) match {
         case Some(neighbors) =>
-          neighbors.filterNot(_ == message.source).map { neighbor =>
-            Request(
-              source = nodeState.nodeId,
-              destination = neighbor,
-              body = BroadcastRequestBody.Broadcast(
-                messageId = Some(c),
-                message = message.value,
+          neighbors
+            .filterNot(_ == message.source) // don't send the message back to its sender
+            .map { neighbor =>
+              Request(
+                source = nodeState.nodeId,
+                destination = neighbor,
+                body = BroadcastRequestBody.Broadcast(
+                  messageId = Some(c),
+                  message = message.value,
+                )
               )
-            )
-          }
+            }
         case None =>
           Nil
       }

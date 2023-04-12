@@ -14,20 +14,26 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
   def onRequest(request: BroadcastRequest): IO[Option[BroadcastResponse]] =
     request.body match {
       case BroadcastRequestBody.Broadcast(messageId, message) =>
-        for {
-          _ <- serviceContext.messages.tryUpdate(ms => (ms :+ message).sorted.distinct)
-          bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
-          _ <- serviceContext.messageQueue.tryOffer(bm)
-        } yield Some(
-          Response(
-            source = request.destination,
-            destination = request.source,
-            body = BroadcastResponseBody.Broadcast(
-              messageId = id,
-              inReplyTo = messageId,
+        serviceContext.messages.get.flatMap { messages =>
+          if messages.contains(message) then
+            IO.pure(None) // we shouldn't send messages that we've seen before
+          else
+            for {
+              _ <- serviceContext.messages.tryUpdate(ms => (ms :+ message).sorted)
+              bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
+              _ <- serviceContext.messageQueue.tryOffer(bm)
+            } yield Some(
+              Response(
+                source = request.destination,
+                destination = request.source,
+                body = BroadcastResponseBody.Broadcast(
+                  messageId = id,
+                  inReplyTo = messageId,
+                )
+              )
             )
-          )
-        )
+        }
+
       case BroadcastRequestBody.Read(messageId) =>
         serviceContext.messages.get.map { ms =>
           Some(

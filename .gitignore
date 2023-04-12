@@ -9,5 +9,6 @@ target
 .vscode
 .env
 *.env
+*.bkp
 opt
 store
