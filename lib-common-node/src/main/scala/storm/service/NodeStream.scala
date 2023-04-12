@@ -10,12 +10,12 @@ trait NodeStream[Rq, Rs](val serviceContext: ServiceContext) {
 
   def run(using Decoder[Rq], Encoder[Rs]): IO[Unit] =
     fs2.Stream
-      .repeatEval(IO.readLine)
+      .fromQueueUnterminated(serviceContext.inbound)
       .evalMap(parse)
       .evalMap(onRequest)
       .collect { case Some(v) => v }
       .map(json)
-      .evalMap(serviceContext.stdoutQueue.offer)
+      .evalMap(serviceContext.outbound.offer)
       .compile
       .drain
 

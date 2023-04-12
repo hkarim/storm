@@ -18,7 +18,7 @@ class PublishStream(serviceContext: LocalServiceContext) {
         fs2.Stream
           .emits(requests)
           .map(json)
-          .evalMap(serviceContext.stdoutQueue.offer)
+          .evalMap(serviceContext.outbound.offer)
       }
       .compile
       .drain
