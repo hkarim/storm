@@ -17,7 +17,7 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
             IO.pure(None) // we shouldn't send messages that we've seen before
           else
             for {
-              id <- serviceContext.messageCounter.getAndUpdate(_ + 1)
+              id <- serviceContext.counter.getAndUpdate(_ + 1)
               _  <- serviceContext.messages.update(ms => (ms :+ message).sorted)
               bm = BroadcastMessage(source = request.source, destination = request.destination, value = message)
               _ <- serviceContext.broadcastQueue.offer(bm)
@@ -37,7 +37,7 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
 
       case BroadcastRequestBody.Read(messageId) =>
         for {
-          id <- serviceContext.messageCounter.getAndUpdate(_ + 1)
+          id <- serviceContext.counter.getAndUpdate(_ + 1)
           ms <- serviceContext.messages.get
         } yield Some(
           Response(
@@ -53,7 +53,7 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
 
       case BroadcastRequestBody.Topology(messageId, topology) =>
         for {
-          id <- serviceContext.messageCounter.getAndUpdate(_ + 1)
+          id <- serviceContext.counter.getAndUpdate(_ + 1)
           _  <- serviceContext.topology.set(topology)
         } yield Some(
           Response(

@@ -27,8 +27,8 @@ class BroadcastStream(serviceContext: LocalServiceContext) {
   private def broadcast(message: BroadcastMessage): IO[List[Request[BroadcastRequestBody.Broadcast]]] =
     for {
       topology <- serviceContext.topology.get
-      c        <- serviceContext.messageCounter.getAndUpdate(_ + 1)
-      nodeState = serviceContext.nodeState
+      c        <- serviceContext.counter.getAndUpdate(_ + 1)
+      nodeState = serviceContext.state
       requests = topology.get(nodeState.nodeId) match {
         case Some(neighbors) =>
           neighbors
