@@ -32,7 +32,7 @@ object BroadcastServiceContext {
         messages       <- Ref.of[IO, Vector[Int]](Vector.empty)
         topology       <- Ref.of[IO, Map[String, List[String]]](Map.empty)
         broadcastQueue <- Queue.unbounded[IO, BroadcastMessage]
-        inFlightQueue  <- Ref.of[IO, Map[String, BroadcastMessage]](Map.empty)
+        inFlight       <- Ref.of[IO, Map[String, BroadcastMessage]](Map.empty)
         serviceContext = new BroadcastServiceContext(
           state = state,
           counter = counter,
@@ -41,7 +41,7 @@ object BroadcastServiceContext {
           inbound = inbound,
           outbound = outbound,
           broadcastQueue = broadcastQueue,
-          inFlight = inFlightQueue,
+          inFlight = inFlight,
         )
         _         <- supervisor.supervise(BroadcastStream.instance(serviceContext).run)
         _         <- supervisor.supervise(FaultToleranceStream.instance(serviceContext).run)
