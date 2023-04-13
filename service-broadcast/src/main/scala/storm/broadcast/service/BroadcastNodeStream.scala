@@ -51,6 +51,9 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
           )
         )
 
+      case BroadcastRequestBody.AckRead(_, _, _) =>
+        IO.pure(None)
+
       case BroadcastRequestBody.Topology(messageId, topology) =>
         for {
           id <- serviceContext.counter.getAndUpdate(_ + 1)

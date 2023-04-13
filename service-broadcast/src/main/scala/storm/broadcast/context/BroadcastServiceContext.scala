@@ -4,8 +4,8 @@ import cats.effect.*
 import cats.effect.std.{Queue, Supervisor}
 import io.circe.Json
 import storm.broadcast.model.BroadcastMessage
+import storm.broadcast.service.*
 import storm.context.NodeState
-import storm.broadcast.service.{BroadcastNodeStream, BroadcastStream, FaultToleranceStream}
 import storm.service.{InitService, StdinStream, StdoutStream}
 
 class BroadcastServiceContext(
@@ -43,8 +43,10 @@ object BroadcastServiceContext {
           broadcastQueue = broadcastQueue,
           inFlight = inFlight,
         )
-        _         <- supervisor.supervise(BroadcastStream.instance(serviceContext).run)
-        _         <- supervisor.supervise(FaultToleranceStream.instance(serviceContext).run)
+        //_         <- supervisor.supervise(FaultToleranceStream.instance(serviceContext).run)
+        //_         <- supervisor.supervise(BroadcastStream.instance(serviceContext).run)
+        _         <- supervisor.supervise(PullNodeStream.instance(serviceContext).run)
+        _         <- supervisor.supervise(ReadStream.instance(serviceContext).run)
         broadcast <- BroadcastNodeStream.instance(serviceContext).run
       } yield broadcast
     }

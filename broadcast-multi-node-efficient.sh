@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-export JAVA_OPTS="-Xms350m -Xmx350m -XX:+UseParallelGC"
+#export JAVA_OPTS="-Xms350m -Xmx350m -XX:+UseParallelGC"
 
 opt/maelstrom/maelstrom \
 test \

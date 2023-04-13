@@ -27,24 +27,26 @@ class BroadcastStream(serviceContext: LocalServiceContext) {
   private def broadcast(message: BroadcastMessage): IO[List[Request[BroadcastRequestBody.Broadcast]]] =
     for {
       topology <- serviceContext.topology.get
-      c        <- serviceContext.counter.getAndUpdate(_ + 1)
       nodeState = serviceContext.state
-      requests = topology.get(nodeState.nodeId) match {
+      requests <- topology.get(nodeState.nodeId) match {
         case Some(neighbors) =>
-          neighbors
-            .filterNot(_ == message.source) // don't send the message back to its sender
-            .map { neighbor =>
-              Request(
-                source = nodeState.nodeId,
-                destination = neighbor,
-                body = BroadcastRequestBody.Broadcast(
-                  messageId = c,
-                  message = message.value,
+          serviceContext.counter.getAndUpdate(_ + 1).map { c =>
+            neighbors
+              .filterNot(_ == message.source) // don't send the message back to its sender
+              .map { neighbor =>
+                Request(
+                  source = nodeState.nodeId,
+                  destination = neighbor,
+                  body = BroadcastRequestBody.Broadcast(
+                    messageId = c,
+                    message = message.value,
+                  )
                 )
-              )
-            }
+              }
+          }
+
         case None =>
-          Nil
+          IO.pure(Nil)
       }
     } yield requests
 

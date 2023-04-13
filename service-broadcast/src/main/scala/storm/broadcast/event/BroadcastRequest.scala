@@ -18,6 +18,8 @@ object BroadcastRequestBody {
         Decoder[Broadcast].map(_.widen)
       case "read" =>
         Decoder[Read].map(_.widen)
+      case "read_ok" =>
+        Decoder[AckRead].map(_.widen)
       case "topology" =>
         Decoder[Topology].map(_.widen)
       case "broadcast_ok" =>
@@ -87,6 +89,36 @@ object BroadcastRequestBody {
       } yield Read(
         messageId = messageId
       )
+
+    given Encoder[Read] =
+      Encoder.instance[Read] { v =>
+        Json.obj(
+          "type"   -> v.tpe.asJson,
+          "msg_id" -> v.messageId.asJson,
+        )
+      }
+  }
+
+  case class AckRead(
+    messageId: Long,
+    inReplyTo: Long,
+    messages: Vector[Int],
+  ) extends BroadcastRequestBody {
+    override final val tpe: String = "read_ok"
+  }
+
+  object AckRead {
+    given Decoder[AckRead] = {
+      for {
+        messageId <- Decoder[Long].at("msg_id")
+        inReplyTo <- Decoder[Long].at("in_reply_to")
+        messages <- Decoder[Vector[Int]].at("messages")
+      } yield AckRead(
+        messageId = messageId,
+        inReplyTo = inReplyTo, 
+        messages = messages,
+      )
+    }
   }
 
   case class Topology(
