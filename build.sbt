@@ -25,6 +25,7 @@ lazy val storm = project
   .aggregate(`lib-common-model`)
   .aggregate(`lib-common-node`)
   .aggregate(`service-echo`)
+  .aggregate(`service-unique-id`)
   .aggregate(`service-broadcast`)
 
 lazy val `lib-common-model` = project
@@ -74,3 +75,19 @@ lazy val `service-broadcast` = project
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.broadcast.Service")))
+
+lazy val `service-unique-id` = project
+  .in(file("service-unique-id"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(commonSettings)
+  .settings(
+    name := "service-unique-id",
+    libraryDependencies ++=
+      Lib.logback ++
+        Lib.scalaLogging ++
+        Lib.config ++
+        Lib.catsEffect ++
+        Lib.fs2
+  )
+  .dependsOn(`lib-common-node`)
+  .settings(List(Compile / mainClass := Some("storm.unique.Service")))
