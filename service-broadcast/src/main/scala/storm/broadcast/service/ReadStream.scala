@@ -3,12 +3,13 @@ package storm.broadcast.service
 import cats.effect.*
 import cats.syntax.all.*
 import io.circe.syntax.*
+import storm.broadcast.context.BroadcastServiceContext
+
 import scala.concurrent.duration.*
-import storm.broadcast.context.LocalServiceContext
 import storm.broadcast.event.BroadcastRequestBody
 import storm.model.Request
 
-class ReadStream(serviceContext: LocalServiceContext) {
+class ReadStream(serviceContext: BroadcastServiceContext) {
 
   def run: IO[Unit] = {
     val state      = serviceContext.state
@@ -40,6 +41,6 @@ class ReadStream(serviceContext: LocalServiceContext) {
 }
 
 object ReadStream {
-  def instance(serviceContext: LocalServiceContext): ReadStream =
+  def instance(serviceContext: BroadcastServiceContext): ReadStream =
     new ReadStream(serviceContext)
 }

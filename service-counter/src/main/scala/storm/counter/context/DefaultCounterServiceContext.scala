@@ -1,22 +1,21 @@
-package storm.broadcast.context
+package storm.counter.context
 
 import cats.effect.*
 import cats.effect.std.{Queue, Supervisor}
 import io.circe.Json
-import storm.broadcast.service.*
-import storm.context.{NodeState, ServiceContext}
+import storm.context.NodeState
+import storm.counter.service.{CounterNodeStream, PullStream}
 import storm.service.{InitService, StdinStream, StdoutStream}
 
-class BroadcastServiceContext(
+class DefaultCounterServiceContext(
   val state: NodeState,
   val counter: Ref[IO, Long],
-  val messages: Ref[IO, Vector[Int]],
-  val topology: Ref[IO, Map[String, List[String]]],
   val inbound: Queue[IO, Json],
   val outbound: Queue[IO, Json],
-) extends ServiceContext
+  val delta: Ref[IO, Map[String, Int]],
+) extends CounterServiceContext
 
-object BroadcastServiceContext {
+object DefaultCounterServiceContext {
   def run: IO[Unit] =
     Supervisor[IO].use { supervisor =>
       for {
@@ -26,20 +25,17 @@ object BroadcastServiceContext {
         _        <- supervisor.supervise(StdoutStream.instance(outbound).run)
         state    <- InitService.instance(inbound, outbound).run
         counter  <- Ref.of[IO, Long](1L)
-        messages <- Ref.of[IO, Vector[Int]](Vector.empty)
-        topology <- Ref.of[IO, Map[String, List[String]]](Map.empty)
-        serviceContext = new BroadcastServiceContext(
+        delta    <- Ref.of[IO, Map[String, Int]](Map.empty)
+        serviceContext = new DefaultCounterServiceContext(
           state = state,
           counter = counter,
-          messages = messages,
-          topology = topology,
           inbound = inbound,
           outbound = outbound,
+          delta = delta,
         )
-        _         <- supervisor.supervise(BroadcastNodeStream.instance(serviceContext).run)
-        _         <- supervisor.supervise(ReadStream.instance(serviceContext).run)
-        broadcast <- BroadcastNodeStream.instance(serviceContext).run
-      } yield broadcast
+        _      <- supervisor.supervise(PullStream.instance(serviceContext).run)
+        stream <- CounterNodeStream.instance(serviceContext).run
+      } yield stream
     }
 
 }

@@ -25,6 +25,7 @@ class CounterNodeStream(serviceContext: CounterServiceContext) extends NodeStrea
             )
           )
         )
+
       case CounterRequestBody.Read(messageId) =>
         for {
           c     <- serviceContext.counter.getAndUpdate(_ + 1)
@@ -40,6 +41,26 @@ class CounterNodeStream(serviceContext: CounterServiceContext) extends NodeStrea
             )
           )
         )
+
+      case CounterRequestBody.Pull(messageId) =>
+        for {
+          c     <- serviceContext.counter.getAndUpdate(_ + 1)
+          delta <- serviceContext.delta.get
+        } yield Some(
+          Response(
+            source = serviceContext.state.nodeId,
+            destination = request.source,
+            body = CounterResponseBody.Pull(
+              messageId = c,
+              inReplyTo = messageId,
+              value = delta,
+            )
+          )
+        )
+
+      case CounterRequestBody.AckPull(_, _, value) =>
+        serviceContext.delta.getAndUpdate(_ ++ value).map(_ => None)
+
     }
 
 }
