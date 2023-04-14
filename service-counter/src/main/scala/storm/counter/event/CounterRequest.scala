@@ -69,7 +69,7 @@ object CounterRequestBody {
   object Pull {
     given Encoder[Pull] =
       Encoder.instance[Pull] { v =>
-        Encoders.request(v) 
+        Encoders.request(v)
       }
 
     given Decoder[Pull] =

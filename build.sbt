@@ -28,6 +28,7 @@ lazy val storm = project
   .aggregate(`service-unique-id`)
   .aggregate(`service-broadcast`)
   .aggregate(`service-counter`)
+  .aggregate(`service-kafka`)
 
 lazy val `lib-common-model` = project
   .in(file("lib-common-model"))
@@ -108,3 +109,20 @@ lazy val `service-counter` = project
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.counter.Service")))
+
+lazy val `service-kafka` = project
+  .in(file("service-kafka"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(commonSettings)
+  .settings(
+    name := "service-kafka",
+    libraryDependencies ++=
+      Lib.logback ++
+        Lib.scalaLogging ++
+        Lib.config ++
+        Lib.catsEffect ++
+        Lib.fs2
+  )
+  .dependsOn(`lib-common-node`)
+  .settings(List(Compile / mainClass := Some("storm.kafka.Service")))
+

@@ -1,7 +1,7 @@
 package storm.service
 
 import cats.effect.*
-import cats.effect.std.Queue
+import cats.effect.std.*
 import io.circe.Json
 
 class StdoutStream(outbound: Queue[IO, Json]) {
@@ -12,6 +12,7 @@ class StdoutStream(outbound: Queue[IO, Json]) {
       .map { json =>
         s"${json.noSpaces}\n"
       }
+      // .evalTap(response => Console[IO].errorln(s"[response] $response"))
       .through(fs2.text.utf8.encode[IO])
       .through(fs2.io.stdout[IO])
       .compile
