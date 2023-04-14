@@ -12,15 +12,15 @@ trait NodeStream[Rq, Rs](val serviceContext: ServiceContext) {
   def run(using Decoder[Rq], Encoder[Rs]): IO[Unit] =
     fs2.Stream
       .fromQueueUnterminated(serviceContext.inbound)
-      .evalMap { json =>
+      .parEvalMapUnorderedUnbounded { json =>
         IO.fromEither {
           json.as[Rq]
         }
       }
-      .evalMap(onRequest)
+      .parEvalMapUnorderedUnbounded(onRequest)
       .collect { case Some(v) => v }
       .map(_.asJson)
-      .evalMap(serviceContext.outbound.offer)
+      .parEvalMapUnorderedUnbounded(serviceContext.outbound.tryOffer)
       .compile
       .drain
 

@@ -10,50 +10,27 @@ import storm.model.Request
 
 class ReadStream(serviceContext: LocalServiceContext) {
 
-//  def run: IO[Unit] =
-//    fs2.Stream
-//      .awakeEvery[IO](150.milliseconds)
-//      .evalMap(_ => serviceContext.topology.get)
-//      .map(_.get(serviceContext.state.nodeId))
-//      .collect { case Some(v) => v }
-//      .evalMap { neighbors =>
-//        neighbors
-//          .traverse { neighbor =>
-//            serviceContext.counter.getAndUpdate(_ + 1).flatMap { c =>
-//              val request = Request(
-//                source = serviceContext.state.nodeId,
-//                destination = neighbor,
-//                body = BroadcastRequestBody.Read(
-//                  messageId = c,
-//                )
-//              )
-//              serviceContext.outbound.offer(request.asJson)
-//            }
-//          }
-//      }
-//      .compile
-//      .drain
-
   def run: IO[Unit] = {
     val state      = serviceContext.state
     val candidates = state.nodeIds.filterNot(_ == state.nodeId).toVector
-    val groups     = candidates.grouped(5).toVector
+    val groups     = candidates.grouped(7).toVector
+    val length     = groups.length
     fs2.Stream
-      .awakeEvery[IO](50.milliseconds)
+      .awakeEvery[IO](150.milliseconds)
       .map(_ => scala.util.Random.between(0, 10000))
       .evalMap { random =>
-        val neighbors = groups(random % groups.length)
+        val neighbors = groups(random % length)
         neighbors
           .traverse { neighbor =>
             serviceContext.counter.getAndUpdate(_ + 1).flatMap { c =>
               val request = Request(
                 source = serviceContext.state.nodeId,
                 destination = neighbor,
-                body = BroadcastRequestBody.Read(
+                body = BroadcastRequestBody.Pull(
                   messageId = c,
                 )
               )
-              serviceContext.outbound.offer(request.asJson)
+              serviceContext.outbound.tryOffer(request.asJson)
             }
           }
       }
