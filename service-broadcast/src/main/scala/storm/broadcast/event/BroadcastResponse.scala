@@ -30,11 +30,7 @@ object BroadcastResponseBody {
   object Broadcast {
     given Encoder[Broadcast] =
       Encoder.instance[Broadcast] { v =>
-        Json.obj(
-          "type"        -> v.tpe.asJson,
-          "msg_id"      -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-        )
+        Encoders.response(v)
       }
   }
 
@@ -49,12 +45,7 @@ object BroadcastResponseBody {
   object Read {
     given Encoder[Read] =
       Encoder.instance[Read] { v =>
-        Json.obj(
-          "type"        -> v.tpe.asJson,
-          "msg_id"      -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-          "messages"    -> v.messages.asJson,
-        )
+        Encoders.response(v, "messages" -> v.messages.asJson)
       }
   }
 
@@ -68,11 +59,7 @@ object BroadcastResponseBody {
   object Topology {
     given Encoder[Topology] =
       Encoder.instance[Topology] { v =>
-        Json.obj(
-          "type"        -> v.tpe.asJson,
-          "msg_id"      -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-        )
+        Encoders.response(v)
       }
   }
 

@@ -1,7 +1,6 @@
 package storm.counter.event
 
 import io.circe.*
-import io.circe.syntax.*
 import storm.model.*
 
 type CounterRequest = Request[CounterRequestBody]
@@ -36,7 +35,7 @@ object CounterRequestBody {
   object Add {
     given Decoder[Add] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
+        messageId <- Decoders.messageId
         delta     <- Decoder[Int].at("delta")
       } yield Add(
         messageId = messageId,
@@ -54,7 +53,7 @@ object CounterRequestBody {
   object Read {
     given Decoder[Read] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
+        messageId <- Decoders.messageId
       } yield Read(
         messageId = messageId,
       )
@@ -70,15 +69,12 @@ object CounterRequestBody {
   object Pull {
     given Encoder[Pull] =
       Encoder.instance[Pull] { v =>
-        Json.obj(
-          "type"   -> v.tpe.asJson,
-          "msg_id" -> v.messageId.asJson,
-        )
+        Encoders.request(v) 
       }
 
     given Decoder[Pull] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
+        messageId <- Decoders.messageId
       } yield Pull(
         messageId = messageId,
       )
@@ -96,8 +92,8 @@ object CounterRequestBody {
   object AckPull {
     given Decoder[AckPull] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
-        inReplyTo <- Decoder[Long].at("in_reply_to")
+        messageId <- Decoders.messageId
+        inReplyTo <- Decoders.inReplyTo
         value     <- Decoder[Map[String, Int]].at("value")
       } yield AckPull(
         messageId = messageId,

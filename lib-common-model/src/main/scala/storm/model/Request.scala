@@ -3,10 +3,7 @@ package storm.model
 import io.circe.*
 import io.circe.syntax.*
 
-trait RequestBody {
-  def tpe: String
-  def messageId: Long
-}
+trait RequestBody extends MessageBody
 
 case class Request[+A <: RequestBody](
   source: String,

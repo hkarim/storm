@@ -3,9 +3,7 @@ package storm.model
 import io.circe.*
 import io.circe.syntax.*
 
-trait ResponseBody {
-  def tpe: String
-  def messageId: Long // optional in the specs but we need to avoid boxing
+trait ResponseBody extends MessageBody {
   def inReplyTo: Long // optional in the specs but we need to avoid boxing
 }
 

@@ -14,7 +14,7 @@ case class UniqueRequestBody(
 object UniqueRequestBody {
   given Decoder[UniqueRequestBody] =
     for {
-      messageId <- Decoder[Long].at("msg_id")
+      messageId <- Decoders.messageId
     } yield UniqueRequestBody(
       messageId = messageId,
     )

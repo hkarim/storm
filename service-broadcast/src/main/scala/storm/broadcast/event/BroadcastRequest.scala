@@ -38,16 +38,12 @@ object BroadcastRequestBody {
   object Broadcast {
     given Encoder[Broadcast] =
       Encoder.instance[Broadcast] { v =>
-        Json.obj(
-          "type"    -> v.tpe.asJson,
-          "msg_id"  -> v.messageId.asJson,
-          "message" -> v.message.asJson,
-        )
+        Encoders.request(v, "message" -> v.message.asJson)
       }
 
     given Decoder[Broadcast] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
+        messageId <- Decoders.messageId
         message   <- Decoder[Int].at("message")
       } yield Broadcast(
         messageId = messageId,
@@ -68,8 +64,8 @@ object BroadcastRequestBody {
   object AckBroadcast {
     given Decoder[AckBroadcast] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
-        inReplyTo <- Decoder[Long].at("in_reply_to")
+        messageId <- Decoders.messageId
+        inReplyTo <- Decoders.inReplyTo
       } yield AckBroadcast(
         messageId = messageId,
         inReplyTo = inReplyTo
@@ -85,17 +81,14 @@ object BroadcastRequestBody {
   object Read {
     given Decoder[Read] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
+        messageId <- Decoders.messageId
       } yield Read(
         messageId = messageId
       )
 
     given Encoder[Read] =
       Encoder.instance[Read] { v =>
-        Json.obj(
-          "type"   -> v.tpe.asJson,
-          "msg_id" -> v.messageId.asJson,
-        )
+        Encoders.request(v)
       }
   }
 
@@ -110,8 +103,8 @@ object BroadcastRequestBody {
   object AckRead {
     given Decoder[AckRead] = {
       for {
-        messageId <- Decoder[Long].at("msg_id")
-        inReplyTo <- Decoder[Long].at("in_reply_to")
+        messageId <- Decoders.messageId
+        inReplyTo <- Decoders.inReplyTo
         messages  <- Decoder[Vector[Int]].at("messages")
       } yield AckRead(
         messageId = messageId,
@@ -131,7 +124,7 @@ object BroadcastRequestBody {
   object Topology {
     given Decoder[Topology] =
       for {
-        messageId <- Decoder[Long].at("msg_id")
+        messageId <- Decoders.messageId
         topology  <- Decoder[Map[String, List[String]]].at("topology")
       } yield Topology(
         messageId = messageId,

@@ -30,11 +30,7 @@ object CounterResponseBody {
   object Add {
     given Encoder[Add] =
       Encoder.instance[Add] { v =>
-        Json.obj(
-          "type"        -> v.tpe.asJson,
-          "msg_id"      -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-        )
+        Encoders.response(v)
       }
   }
 
@@ -49,12 +45,7 @@ object CounterResponseBody {
   object Read {
     given Encoder[Read] =
       Encoder.instance[Read] { v =>
-        Json.obj(
-          "type"        -> v.tpe.asJson,
-          "msg_id"      -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-          "value"       -> v.value.asJson,
-        )
+        Encoders.response(v, "value" -> v.value.asJson)
       }
   }
 
@@ -69,12 +60,7 @@ object CounterResponseBody {
   object Pull {
     given Encoder[Pull] =
       Encoder.instance[Pull] { v =>
-        Json.obj(
-          "type"        -> v.tpe.asJson,
-          "msg_id"      -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-          "value"       -> v.value.asJson,
-        )
+        Encoders.response(v, "value" -> v.value.asJson)
       }
 
   }

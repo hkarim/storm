@@ -15,7 +15,7 @@ case class EchoRequestBody(
 object EchoRequestBody {
   given Decoder[EchoRequestBody] =
     for {
-      messageId <- Decoder[Long].at("msg_id")
+      messageId <- Decoders.messageId
       echo      <- Decoder[String].at("echo")
     } yield EchoRequestBody(
       messageId = messageId,

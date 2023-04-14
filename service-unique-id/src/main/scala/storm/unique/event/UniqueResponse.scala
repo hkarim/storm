@@ -17,11 +17,7 @@ case class UniqueResponseBody(
 object UniqueResponseBody {
 
   given Encoder[UniqueResponseBody] = Encoder.instance[UniqueResponseBody] { v =>
-    Json.obj(
-      "type"        -> v.tpe.asJson,
-      "in_reply_to" -> v.inReplyTo.asJson,
-      "id"          -> v.id.asJson,
-    )
+    Encoders.response(v, "id" -> v.id.asJson)
   }
 
 }
