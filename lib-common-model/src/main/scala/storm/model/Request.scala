@@ -19,7 +19,7 @@ object Request {
   given [A <: RequestBody: Encoder]: Encoder[Request[A]] =
     Encoder.instance[Request[A]] { v =>
       Json.obj(
-        "src" -> v.source.asJson,
+        "src"  -> v.source.asJson,
         "dest" -> v.destination.asJson,
         "body" -> v.body.asJson,
       )

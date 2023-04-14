@@ -12,7 +12,7 @@ import storm.model.Request
 class PullStream(serviceContext: CounterServiceContext) {
 
   def run: IO[Unit] = {
-    val state      = serviceContext.state
+    val state     = serviceContext.state
     val neighbors = state.nodeIds.filterNot(_ == state.nodeId).toVector
     fs2.Stream
       .awakeEvery[IO](50.milliseconds)

@@ -11,4 +11,4 @@ trait CounterServiceContext extends ServiceContext {
   def inbound: Queue[IO, Json]
   def outbound: Queue[IO, Json]
   def delta: Ref[IO, Map[String, Int]]
-} 
+}

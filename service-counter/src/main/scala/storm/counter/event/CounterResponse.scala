@@ -76,7 +76,7 @@ object CounterResponseBody {
           "value"       -> v.value.asJson,
         )
       }
-      
+
   }
 
 }

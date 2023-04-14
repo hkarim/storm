@@ -17,10 +17,10 @@ case class Response[+A <: ResponseBody](
 
 object Response {
 
-  given[A <: ResponseBody : Encoder]: Encoder[Response[A]] =
+  given [A <: ResponseBody: Encoder]: Encoder[Response[A]] =
     Encoder.instance[Response[A]] { v =>
       Json.obj(
-        "src" -> v.source.asJson,
+        "src"  -> v.source.asJson,
         "dest" -> v.destination.asJson,
         "body" -> v.body.asJson,
       )

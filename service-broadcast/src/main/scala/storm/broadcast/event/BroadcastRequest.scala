@@ -112,10 +112,10 @@ object BroadcastRequestBody {
       for {
         messageId <- Decoder[Long].at("msg_id")
         inReplyTo <- Decoder[Long].at("in_reply_to")
-        messages <- Decoder[Vector[Int]].at("messages")
+        messages  <- Decoder[Vector[Int]].at("messages")
       } yield AckRead(
         messageId = messageId,
-        inReplyTo = inReplyTo, 
+        inReplyTo = inReplyTo,
         messages = messages,
       )
     }
