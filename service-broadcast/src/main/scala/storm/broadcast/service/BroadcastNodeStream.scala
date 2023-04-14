@@ -54,25 +54,6 @@ class BroadcastNodeStream(serviceContext: LocalServiceContext) extends NodeStrea
       case BroadcastRequestBody.AckRead(_, _, _) =>
         IO.pure(None)
 
-      case BroadcastRequestBody.Pull(messageId) =>
-        for {
-          id <- serviceContext.counter.getAndUpdate(_ + 1)
-          ms <- serviceContext.messages.get
-        } yield Some(
-          Response(
-            source = request.destination,
-            destination = request.source,
-            body = BroadcastResponseBody.Pull(
-              messageId = id,
-              inReplyTo = messageId,
-              messages = ms,
-            )
-          )
-        )
-
-      case BroadcastRequestBody.AckPull(_, _, _) =>
-        IO.pure(None)
-
       case BroadcastRequestBody.Topology(messageId, topology) =>
         for {
           id <- serviceContext.counter.getAndUpdate(_ + 1)

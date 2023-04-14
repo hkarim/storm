@@ -26,7 +26,7 @@ class ReadStream(serviceContext: LocalServiceContext) {
               val request = Request(
                 source = serviceContext.state.nodeId,
                 destination = neighbor,
-                body = BroadcastRequestBody.Pull(
+                body = BroadcastRequestBody.Read(
                   messageId = c,
                 )
               )

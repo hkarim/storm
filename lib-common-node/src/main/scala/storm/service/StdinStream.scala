@@ -14,7 +14,7 @@ class StdinStream(inbound: Queue[IO, Json]) {
           parser.parse(line)
         }
       }
-      .parEvalMapUnorderedUnbounded(inbound.tryOffer)
+      .evalMap(inbound.tryOffer)
       .compile
       .drain
 }

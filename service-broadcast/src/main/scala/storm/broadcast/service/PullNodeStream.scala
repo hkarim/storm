@@ -41,27 +41,7 @@ class PullNodeStream(serviceContext: LocalServiceContext) extends NodeStream[Bro
           )
         )
 
-      case BroadcastRequestBody.Pull(messageId) =>
-        for {
-          id <- serviceContext.counter.getAndUpdate(_ + 1)
-          ms <- serviceContext.messages.get
-        } yield Some(
-          Response(
-            source = request.destination,
-            destination = request.source,
-            body = BroadcastResponseBody.Pull(
-              messageId = id,
-              inReplyTo = messageId,
-              messages = ms,
-            )
-          )
-        )
-
       case BroadcastRequestBody.AckRead(_, _, messages) =>
-        serviceContext.messages.update(ms => (ms ++ messages).sorted.distinct)
-          .map(_ => None)
-
-      case BroadcastRequestBody.AckPull(_, _, messages) =>
         serviceContext.messages.update(ms => (ms ++ messages).sorted.distinct)
           .map(_ => None)
 

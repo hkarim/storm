@@ -16,8 +16,6 @@ object BroadcastResponseBody {
         Encoder[Broadcast].apply(v)
       case v: Read =>
         Encoder[Read].apply(v)
-      case v: Pull =>
-        Encoder[Pull].apply(v)
       case v: Topology =>
         Encoder[Topology].apply(v)
     }
@@ -56,26 +54,6 @@ object BroadcastResponseBody {
           "msg_id"      -> v.messageId.asJson,
           "in_reply_to" -> v.inReplyTo.asJson,
           "messages"    -> v.messages.asJson,
-        )
-      }
-  }
-
-  case class Pull(
-    messageId: Long,
-    inReplyTo: Long,
-    messages: Vector[Int],
-  ) extends BroadcastResponseBody {
-    override final val tpe: String = "pull_ok"
-  }
-
-  object Pull {
-    given Encoder[Pull] =
-      Encoder.instance[Pull] { v =>
-        Json.obj(
-          "type" -> v.tpe.asJson,
-          "msg_id" -> v.messageId.asJson,
-          "in_reply_to" -> v.inReplyTo.asJson,
-          "messages" -> v.messages.asJson,
         )
       }
   }

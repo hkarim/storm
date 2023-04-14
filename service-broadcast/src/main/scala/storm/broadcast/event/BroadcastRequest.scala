@@ -20,10 +20,6 @@ object BroadcastRequestBody {
         Decoder[Read].map(_.widen)
       case "read_ok" =>
         Decoder[AckRead].map(_.widen)
-      case "pull" =>
-        Decoder[Pull].map(_.widen)
-      case "pull_ok" =>
-        Decoder[AckPull].map(_.widen)
       case "topology" =>
         Decoder[Topology].map(_.widen)
       case "broadcast_ok" =>
@@ -103,29 +99,6 @@ object BroadcastRequestBody {
       }
   }
 
-  case class Pull(
-    messageId: Long,
-  ) extends BroadcastRequestBody {
-    override final val tpe: String = "pull"
-  }
-
-  object Pull {
-    given Decoder[Pull] =
-      for {
-        messageId <- Decoder[Long].at("msg_id")
-      } yield Pull(
-        messageId = messageId
-      )
-
-    given Encoder[Pull] =
-      Encoder.instance[Pull] { v =>
-        Json.obj(
-          "type" -> v.tpe.asJson,
-          "msg_id" -> v.messageId.asJson,
-        )
-      }
-  }
-
   case class AckRead(
     messageId: Long,
     inReplyTo: Long,
@@ -143,28 +116,6 @@ object BroadcastRequestBody {
       } yield AckRead(
         messageId = messageId,
         inReplyTo = inReplyTo, 
-        messages = messages,
-      )
-    }
-  }
-
-  case class AckPull(
-    messageId: Long,
-    inReplyTo: Long,
-    messages: Vector[Int],
-  ) extends BroadcastRequestBody {
-    override final val tpe: String = "pull_ok"
-  }
-
-  object AckPull {
-    given Decoder[AckPull] = {
-      for {
-        messageId <- Decoder[Long].at("msg_id")
-        inReplyTo <- Decoder[Long].at("in_reply_to")
-        messages <- Decoder[Vector[Int]].at("messages")
-      } yield AckPull(
-        messageId = messageId,
-        inReplyTo = inReplyTo,
         messages = messages,
       )
     }
