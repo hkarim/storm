@@ -4,8 +4,8 @@ import cats.effect.*
 import cats.syntax.all.*
 import io.circe.syntax.*
 import storm.txn.context.TxnServiceContext
-import storm.txn.event.TxnRequestBody
-import storm.model.Request
+import storm.txn.event.TxnRequestData
+import storm.model.*
 
 import scala.concurrent.duration.*
 
@@ -20,12 +20,11 @@ class PullStream(serviceContext: TxnServiceContext) {
         neighbors
           .traverse { neighbor =>
             serviceContext.counter.getAndUpdate(_ + 1).flatMap { c =>
-              val request = Request(
+              val request = Message(
+                messageId = c,
                 source = state.nodeId,
                 destination = neighbor,
-                body = TxnRequestBody.Pull(
-                  messageId = c,
-                )
+                data = TxnRequestData.Pull
               )
               serviceContext.outbound.tryOffer(request.asJson)
             }
