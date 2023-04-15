@@ -9,7 +9,7 @@ lazy val commonSettings = List(
     "-feature",
     "-no-indent",
     "-Xfatal-warnings",
-    "-Wunused:all",
+    //"-Wunused:all",
     "-Wvalue-discard",
   ),
   // Test / parallelExecution := true,
@@ -29,6 +29,7 @@ lazy val storm = project
   .aggregate(`service-broadcast`)
   .aggregate(`service-counter`)
   .aggregate(`service-kafka`)
+  .aggregate(`service-txn`)
 
 lazy val `lib-common-model` = project
   .in(file("lib-common-model"))
@@ -125,4 +126,21 @@ lazy val `service-kafka` = project
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.kafka.Service")))
+
+lazy val `service-txn` = project
+  .in(file("service-txn"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(commonSettings)
+  .settings(
+    name := "service-txn",
+    libraryDependencies ++=
+      Lib.logback ++
+        Lib.scalaLogging ++
+        Lib.config ++
+        Lib.catsEffect ++
+        Lib.fs2
+  )
+  .dependsOn(`lib-common-node`)
+  .settings(List(Compile / mainClass := Some("storm.txn.Service")))
+
 
