@@ -14,7 +14,7 @@ class DefaultTxnServiceContext(
   val inbound: Queue[IO, Json],
   val outbound: Queue[IO, Json],
   val store: Ref[IO, Store],
-) extends TxnServiceContext {}
+) extends TxnServiceContext
 
 object DefaultTxnServiceContext {
   def run: IO[Unit] =

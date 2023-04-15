@@ -17,8 +17,8 @@ object Operation {
 
   given Decoder[Operation] =
     Decoder.decodeString.flatMap {
-      case "r" => Decoder.const(Operation.Read)
-      case "w" => Decoder.const(Operation.Write)
+      case "r"       => Decoder.const(Operation.Read)
+      case "w"       => Decoder.const(Operation.Write)
       case otherwise => Decoder.failed(DecodingFailure(s"unrecognized Operation `$otherwise`", Nil))
     }
 }

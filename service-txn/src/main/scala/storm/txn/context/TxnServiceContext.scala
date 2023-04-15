@@ -7,4 +7,3 @@ import storm.txn.model.*
 trait TxnServiceContext extends ServiceContext {
   def store: Ref[IO, Store]
 }
-

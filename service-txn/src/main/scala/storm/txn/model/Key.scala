@@ -8,5 +8,3 @@ object Key {
   given Encoder[Key] = Encoder.encodeInt
   given Decoder[Key] = Decoder.decodeInt
 }
-
-

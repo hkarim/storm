@@ -23,11 +23,6 @@ object Store {
             (store.updated(k, v), records :+ Record(Operation.Write, k, v))
         }
 
-
       }
   }
 }
-
-
-
-
