@@ -1,12 +1,12 @@
 package storm.txn.context
 
 import cats.effect.*
-import cats.effect.std.{Queue, Supervisor}
+import cats.effect.std.*
 import io.circe.Json
 import storm.context.NodeState
 import storm.service.*
 import storm.txn.model.Store
-import storm.txn.service.TxnNodeStream
+import storm.txn.service.{PullStream, TxnNodeStream}
 
 class DefaultTxnServiceContext(
   val state: NodeState,
@@ -34,6 +34,7 @@ object DefaultTxnServiceContext {
           outbound = outbound,
           store = store,
         )
+        _      <- supervisor.supervise(PullStream.instance(serviceContext).run)
         stream <- TxnNodeStream.instance(serviceContext).run
       } yield stream
     }

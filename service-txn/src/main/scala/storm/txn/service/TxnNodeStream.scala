@@ -24,6 +24,25 @@ class TxnNodeStream(serviceContext: TxnServiceContext) extends NodeStream[TxnReq
             )
           )
         )
+
+      case TxnRequestBody.Pull(messageId) =>
+        for {
+          c     <- serviceContext.counter.updateAndGet(_ + 1)
+          store <- serviceContext.store.get
+        } yield Some(
+          Response(
+            source = serviceContext.state.nodeId,
+            destination = request.source,
+            body = TxnResponseBody.Pull(
+              messageId = c,
+              inReplyTo = messageId,
+              store = store,
+            )
+          )
+        )
+
+      case TxnRequestBody.AckPull(_, store) =>
+        serviceContext.store.update(_.merge(store)).map(_ => None)
     }
 }
 

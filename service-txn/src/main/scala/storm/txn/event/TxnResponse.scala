@@ -7,7 +7,7 @@ import storm.txn.model.*
 
 type TxnResponse = Response[TxnResponseBody]
 
-trait TxnResponseBody extends ResponseBody {
+sealed trait TxnResponseBody extends ResponseBody {
   def widen: TxnResponseBody = this
 }
 
@@ -16,6 +16,8 @@ object TxnResponseBody {
     Encoder.instance[TxnResponseBody] {
       case v: Txn =>
         Encoder[Txn].apply(v)
+      case v: Pull =>
+        Encoder[Pull].apply(v)
     }
 
   case class Txn(
@@ -31,5 +33,32 @@ object TxnResponseBody {
       Encoder.instance[Txn] { v =>
         Encoders.response(v, "txn" -> v.transaction.asJson)
       }
+  }
+
+  case class Pull(
+    messageId: Long,
+    inReplyTo: Long,
+    store: Store,
+  ) extends TxnResponseBody {
+    override final val tpe: String = "pull_ok"
+  }
+
+  object Pull {
+
+    given Encoder[Pull] =
+      Encoder.instance[Pull] { v =>
+        Encoders.response(v, "store" -> v.store.asJson)
+      }
+
+    given Decoder[Pull] =
+      for {
+        messageId <- Decoders.messageId
+        inReplyTo <- Decoders.inReplyTo
+        store     <- Decoder[Store].at("store")
+      } yield Pull(
+        messageId = messageId,
+        inReplyTo = inReplyTo,
+        store = store,
+      )
   }
 }

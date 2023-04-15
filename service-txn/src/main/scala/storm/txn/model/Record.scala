@@ -11,12 +11,8 @@ case class Record(
 
 object Record {
   given Encoder[Record] =
-    Encoder.instance[Record] { v =>
-      Json.arr(
-        v.operation.asJson,
-        v.key.asJson,
-        v.value.asJson,
-      )
+    Encoder[(Operation, Key, Value)].contramap[Record] { record =>
+      (record.operation, record.key, record.value)
     }
 
   given Decoder[Record] =
