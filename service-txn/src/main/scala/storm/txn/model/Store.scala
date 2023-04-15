@@ -8,8 +8,8 @@ object Store {
 
   extension (self: Store) {
 
-    def modify(transactions: Vector[Record]): (Store, Vector[Record]) =
-      transactions.foldLeft((self, Vector.empty[Record])) { (acc, record) =>
+    def modify(transaction: Vector[Record]): (Store, Vector[Record]) =
+      transaction.foldLeft((self, Vector.empty[Record])) { (acc, record) =>
         val (store, records) = acc
         record match {
           case Record(Operation.Read, k, _) =>
