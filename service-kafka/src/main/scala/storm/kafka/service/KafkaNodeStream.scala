@@ -6,72 +6,48 @@ import storm.kafka.context.KafkaServiceContext
 import storm.kafka.event.*
 import storm.service.NodeStream
 
-class KafkaNodeStream(serviceContext: KafkaServiceContext) extends NodeStream[KafkaRequest, KafkaResponse](serviceContext) {
+class KafkaNodeStream(serviceContext: KafkaServiceContext) extends NodeStream[KafkaRequestData, KafkaResponseData](serviceContext) {
 
-  def onRequest(request: KafkaRequest): IO[Option[KafkaResponse]] =
-    request.body match {
-      case KafkaRequestBody.Send(messageId, key, message) =>
-        for {
-          c      <- serviceContext.counter.getAndUpdate(_ + 1)
-          offset <- serviceContext.replica.modify(_.put(key, message))
-        } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = KafkaResponseBody.Send(
-              messageId = c,
-              inReplyTo = messageId,
+  def onRequest(request: Message[KafkaRequestData]): IO[Option[KafkaResponseData]] =
+    request.data match {
+      case KafkaRequestData.Send(partition, message) =>
+        serviceContext.replica.modify(_.put(partition, message)).map { offset =>
+          Some(
+            KafkaResponseData.Send(
+              inReplyTo = request.messageId,
               offset = offset,
             )
           )
-        )
+        }
 
-      case KafkaRequestBody.Poll(messageId, offsets) =>
-        for {
-          c        <- serviceContext.counter.getAndUpdate(_ + 1)
-          messages <- serviceContext.replica.modify(x => (x, x.poll(offsets)))
-        } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = KafkaResponseBody.Poll(
-              messageId = c,
-              inReplyTo = messageId,
+      case KafkaRequestData.Poll(offsets) =>
+        serviceContext.replica.modify(x => (x, x.poll(offsets))).map { messages =>
+          Some(
+            KafkaResponseData.Poll(
+              inReplyTo = request.messageId,
               messages = messages,
             )
           )
-        )
+        }
 
-      case KafkaRequestBody.CommitOffsets(messageId, offsets) =>
-        for {
-          c <- serviceContext.counter.getAndUpdate(_ + 1)
-          _ <- serviceContext.commits.update(_.commit(offsets))
-        } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = KafkaResponseBody.CommitOffsets(
-              messageId = c,
-              inReplyTo = messageId,
+      case KafkaRequestData.CommitOffsets(offsets) =>
+        serviceContext.commits.update(_.commit(offsets)).map { _ =>
+          Some(
+            KafkaResponseData.CommitOffsets(
+              inReplyTo = request.messageId,
             )
           )
-        )
+        }
 
-      case KafkaRequestBody.ListCommittedOffsets(messageId, keys) =>
-        for {
-          c       <- serviceContext.counter.getAndUpdate(_ + 1)
-          offsets <- serviceContext.commits.modify(x => (x, x.list(keys)))
-        } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = KafkaResponseBody.ListCommittedOffsets(
-              messageId = c,
-              inReplyTo = messageId,
+      case KafkaRequestData.ListCommittedOffsets(keys) =>
+        serviceContext.commits.modify(x => (x, x.list(keys))).map { offsets =>
+          Some(
+            KafkaResponseData.ListCommittedOffsets(
+              inReplyTo = request.messageId,
               offsets = offsets,
             )
           )
-        )
+        }
     }
 
 }

@@ -2,9 +2,9 @@ package storm.kafka.model
 
 import io.circe.*
 
-opaque type Message = Option[Int]
+opaque type KafkaMessage = Option[Int]
 
-object Message {
-  given Encoder[Message] = Encoder.encodeOption(Encoder.encodeInt)
-  given Decoder[Message] = Decoder.decodeOption(Decoder.decodeInt)
+object KafkaMessage {
+  given Encoder[KafkaMessage] = Encoder.encodeOption(Encoder.encodeInt)
+  given Decoder[KafkaMessage] = Decoder.decodeOption(Decoder.decodeInt)
 }

@@ -8,7 +8,7 @@ object Replica {
 
   extension (self: Replica) {
 
-    def put(partition: Partition, message: Message): (Replica, Offset) =
+    def put(partition: Partition, message: KafkaMessage): (Replica, Offset) =
       self.get(partition) match {
         case Some(log) =>
           val modifiedLog     = log.append(message)
@@ -20,8 +20,8 @@ object Replica {
           (modifiedReplica, newLog.offset)
       }
 
-    def poll(offsets: Map[Partition, Offset]): Map[Partition, Vector[(Offset, Message)]] =
-      offsets.foldLeft(Map.empty[Partition, Vector[(Offset, Message)]]) { (acc, next) =>
+    def poll(offsets: Map[Partition, Offset]): Map[Partition, Vector[(Offset, KafkaMessage)]] =
+      offsets.foldLeft(Map.empty[Partition, Vector[(Offset, KafkaMessage)]]) { (acc, next) =>
         val (partition, offset) = next
         self.get(partition) match {
           case Some(log) =>
