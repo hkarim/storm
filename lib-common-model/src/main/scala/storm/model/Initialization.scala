@@ -3,44 +3,36 @@ package storm.model
 import io.circe.*
 import io.circe.syntax.*
 
-case class InitializationRequestBody(
-  messageId: Long,
-  nodeId: String,
-  nodeIds: List[String],
-) extends RequestBody {
-  override final val tpe: String = "init"
-}
+case class InitializationRequestData(nodeId: String, nodeIds: List[String])
 
-object InitializationRequestBody {
-  given Decoder[InitializationRequestBody] =
+object InitializationRequestData {
+  final val Type: String = "init"
+
+  given DataType[InitializationRequestData] =
+    DataType.instance(_ => Type)
+
+  given Decoder[InitializationRequestData] =
     for {
-      messageId <- Decoder[Long].at("msg_id")
-      nodeId    <- Decoder[String].at("node_id")
-      nodeIds   <- Decoder[List[String]].at("node_ids")
-    } yield InitializationRequestBody(
-      messageId = messageId,
+      nodeId  <- Decoder[String].at("node_id")
+      nodeIds <- Decoder[List[String]].at("node_ids")
+    } yield InitializationRequestData(
       nodeId = nodeId,
       nodeIds = nodeIds,
     )
 }
 
-case class InitializationResponseBody(
-  messageId: Long,
-  inReplyTo: Long,
-) extends ResponseBody {
-  override final val tpe: String = "init_ok"
-}
+case class InitializationResponseData(inReplyTo: Long)
 
-object InitializationResponseBody {
-  given Encoder[InitializationResponseBody] =
-    Encoder.instance[InitializationResponseBody] { v =>
+object InitializationResponseData {
+  final val Type: String = "init_ok"
+
+  given DataType[InitializationResponseData] =
+    DataType.instance(_ => Type)
+
+  given Encoder[InitializationResponseData] =
+    Encoder.instance[InitializationResponseData] { v =>
       Json.obj(
-        "type"        -> v.tpe.asJson,
-        "msg_id"      -> v.messageId.asJson,
-        "in_reply_to" -> v.inReplyTo.asJson,
+        Message.Encoders.inReplyTo(v.inReplyTo)
       )
     }
 }
-
-type InitializationRequest  = Request[InitializationRequestBody]
-type InitializationResponse = Response[InitializationResponseBody]

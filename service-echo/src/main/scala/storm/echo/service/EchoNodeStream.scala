@@ -6,19 +6,14 @@ import storm.echo.event.*
 import storm.model.*
 import storm.service.NodeStream
 
-class EchoNodeStream(serviceContext: ServiceContext) extends NodeStream[EchoRequest, EchoResponse](serviceContext) {
+class EchoNodeStream(serviceContext: ServiceContext) extends NodeStream[EchoRequestData, EchoResponseData](serviceContext) {
 
-  def onRequest(request: EchoRequest): IO[Option[EchoResponse]] =
-    serviceContext.counter.getAndUpdate(_ + 1).map { c =>
+  override def onRequest(request: Message[EchoRequestData]): IO[Option[EchoResponseData]] =
+    IO.pure {
       Some(
-        Response[EchoResponseBody](
-          source = request.destination,
-          destination = request.source,
-          body = EchoResponseBody(
-            messageId = c,
-            inReplyTo = request.body.messageId,
-            echo = request.body.echo,
-          )
+        EchoResponseData(
+          inReplyTo = request.messageId,
+          echo = request.data.echo,
         )
       )
     }

@@ -6,59 +6,41 @@ import storm.counter.context.CounterServiceContext
 import storm.counter.event.*
 import storm.service.NodeStream
 
-class CounterNodeStream(serviceContext: CounterServiceContext) extends NodeStream[CounterRequest, CounterResponse](serviceContext) {
+class CounterNodeStream(serviceContext: CounterServiceContext) extends NodeStream[CounterRequestData, CounterResponseData](serviceContext) {
 
-  def onRequest(request: CounterRequest): IO[Option[CounterResponse]] =
-    request.body match {
-      case CounterRequestBody.Add(messageId, delta) =>
+  def onRequest(request: Message[CounterRequestData]): IO[Option[CounterResponseData]] =
+    request.data match {
+      case CounterRequestData.Add(delta) =>
+        val key = s"${request.source}-${request.messageId}"
         for {
-          c <- serviceContext.counter.getAndUpdate(_ + 1)
-          key = s"${request.source}-$messageId"
           _ <- serviceContext.delta.getAndUpdate(_.updated(key, delta))
         } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = CounterResponseBody.Add(
-              messageId = c,
-              inReplyTo = request.body.messageId,
-            )
+          CounterResponseData.Add(
+            inReplyTo = request.messageId,
           )
         )
 
-      case CounterRequestBody.Read(messageId) =>
+      case CounterRequestData.Read =>
         for {
-          c     <- serviceContext.counter.getAndUpdate(_ + 1)
           delta <- serviceContext.delta.get
         } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = CounterResponseBody.Read(
-              messageId = c,
-              inReplyTo = messageId,
-              value = delta.values.sum
-            )
+          CounterResponseData.Read(
+            inReplyTo = request.messageId,
+            value = delta.values.sum
           )
         )
 
-      case CounterRequestBody.Pull(messageId) =>
+      case CounterRequestData.Pull =>
         for {
-          c     <- serviceContext.counter.getAndUpdate(_ + 1)
           delta <- serviceContext.delta.get
         } yield Some(
-          Response(
-            source = serviceContext.state.nodeId,
-            destination = request.source,
-            body = CounterResponseBody.Pull(
-              messageId = c,
-              inReplyTo = messageId,
-              value = delta,
-            )
+          CounterSharedData.AckPull(
+            inReplyTo = request.messageId,
+            value = delta,
           )
         )
 
-      case CounterRequestBody.AckPull(_, _, value) =>
+      case CounterSharedData.AckPull(_, value) =>
         serviceContext.delta.getAndUpdate(_ ++ value).map(_ => None)
 
     }

@@ -5,20 +5,16 @@ import storm.context.*
 import storm.unique.event.*
 import storm.model.*
 import storm.service.NodeStream
+import storm.unique.context.UniqueServiceContext
 
-class UniqueNodeStream(serviceContext: ServiceContext) extends NodeStream[UniqueRequest, UniqueResponse](serviceContext) {
+class UniqueNodeStream(serviceContext: UniqueServiceContext) extends NodeStream[UniqueRequestData.type, UniqueResponseData](serviceContext) {
 
-  def onRequest(request: UniqueRequest): IO[Option[UniqueResponse]] =
-    serviceContext.counter.getAndUpdate(_ + 1).map { c =>
+  def onRequest(request: Message[UniqueRequestData.type]): IO[Option[UniqueResponseData]] =
+    serviceContext.unique.getAndUpdate(_ + 1).map { u =>
       Some(
-        Response[UniqueResponseBody](
-          source = request.destination,
-          destination = request.source,
-          body = UniqueResponseBody(
-            messageId = c,
-            inReplyTo = request.body.messageId,
-            id = s"${serviceContext.state.nodeId}-$c",
-          )
+        UniqueResponseData(
+          inReplyTo = request.messageId,
+          id = s"${serviceContext.state.nodeId}-$u",
         )
       )
     }
@@ -26,6 +22,6 @@ class UniqueNodeStream(serviceContext: ServiceContext) extends NodeStream[Unique
 }
 
 object UniqueNodeStream {
-  def instance(serviceContext: ServiceContext): UniqueNodeStream =
+  def instance(serviceContext: UniqueServiceContext): UniqueNodeStream =
     new UniqueNodeStream(serviceContext)
 }

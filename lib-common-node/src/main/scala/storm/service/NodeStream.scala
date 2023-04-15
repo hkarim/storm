@@ -4,22 +4,36 @@ import cats.effect.IO
 import io.circe.*
 import io.circe.syntax.*
 import storm.context.ServiceContext
+import storm.model.{DataType, Message}
 
 trait NodeStream[Rq, Rs](val serviceContext: ServiceContext) {
 
-  def onRequest(request: Rq): IO[Option[Rs]]
+  def onRequest(request: Message[Rq]): IO[Option[Rs]]
 
-  def run(using Decoder[Rq], Encoder[Rs]): IO[Unit] =
+  def run(using Decoder[Rq], Encoder[Rs], DataType[Rs]): IO[Unit] =
     fs2.Stream
       .fromQueueUnterminated(serviceContext.inbound)
       .parEvalMapUnorderedUnbounded { json =>
         IO.fromEither {
-          json.as[Rq]
+          json.as[Message[Rq]]
         }
       }
-      .parEvalMapUnorderedUnbounded(onRequest)
-      .collect { case Some(v) => v }
-      .map(_.asJson)
+      .parEvalMapUnorderedUnbounded { rq =>
+        onRequest(rq).map { rs =>
+          (rq, rs)
+        }
+      }
+      .collect { case (rq, Some(rs)) => (rq, rs) }
+      .evalMap {
+        case (rq, rs) =>
+          serviceContext.counter.getAndUpdate(_ + 1).map { c =>
+            Message.response(
+              request = rq,
+              id = c,
+              data = rs,
+            ).asJson
+          }
+      }
       .parEvalMapUnorderedUnbounded(serviceContext.outbound.tryOffer)
       .compile
       .drain

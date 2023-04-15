@@ -6,8 +6,8 @@ import io.circe.syntax.*
 import storm.counter.context.CounterServiceContext
 
 import scala.concurrent.duration.*
-import storm.counter.event.CounterRequestBody
-import storm.model.Request
+import storm.counter.event.CounterRequestData
+import storm.model.Message
 
 class PullStream(serviceContext: CounterServiceContext) {
 
@@ -20,13 +20,13 @@ class PullStream(serviceContext: CounterServiceContext) {
         neighbors
           .traverse { neighbor =>
             serviceContext.counter.getAndUpdate(_ + 1).flatMap { c =>
-              val request = Request(
-                source = state.nodeId,
-                destination = neighbor,
-                body = CounterRequestBody.Pull(
+              val request =
+                Message(
                   messageId = c,
+                  source = state.nodeId,
+                  destination = neighbor,
+                  data = CounterRequestData.Pull
                 )
-              )
               serviceContext.outbound.tryOffer(request.asJson)
             }
           }

@@ -6,8 +6,8 @@ import io.circe.syntax.*
 import storm.broadcast.context.BroadcastServiceContext
 
 import scala.concurrent.duration.*
-import storm.broadcast.event.BroadcastRequestBody
-import storm.model.Request
+import storm.broadcast.event.BroadcastRequestData
+import storm.model.*
 
 class ReadStream(serviceContext: BroadcastServiceContext) {
 
@@ -24,12 +24,11 @@ class ReadStream(serviceContext: BroadcastServiceContext) {
         neighbors
           .traverse { neighbor =>
             serviceContext.counter.getAndUpdate(_ + 1).flatMap { c =>
-              val request = Request(
+              val request = Message(
                 source = serviceContext.state.nodeId,
                 destination = neighbor,
-                body = BroadcastRequestBody.Read(
-                  messageId = c,
-                )
+                messageId = c,
+                data = BroadcastRequestData.Read
               )
               serviceContext.outbound.tryOffer(request.asJson)
             }

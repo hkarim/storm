@@ -6,62 +6,45 @@ import storm.broadcast.context.*
 import storm.model.*
 import storm.service.NodeStream
 
-class BroadcastNodeStream(serviceContext: BroadcastServiceContext) extends NodeStream[BroadcastRequest, BroadcastResponse](serviceContext) {
+class BroadcastNodeStream(serviceContext: BroadcastServiceContext)
+  extends NodeStream[BroadcastRequestData, BroadcastResponseData](serviceContext) {
 
-  def onRequest(request: BroadcastRequest): IO[Option[BroadcastResponse]] =
-    request.body match {
-      case BroadcastRequestBody.Broadcast(messageId, message) =>
-        for {
-          id <- serviceContext.counter.getAndUpdate(_ + 1)
-          _  <- serviceContext.messages.update(ms => (ms :+ message).sorted.distinct)
-        } yield Some(
-          Response(
-            source = request.destination,
-            destination = request.source,
-            body = BroadcastResponseBody.Broadcast(
-              messageId = id,
-              inReplyTo = messageId,
+  def onRequest(request: Message[BroadcastRequestData]): IO[Option[BroadcastResponseData]] =
+    request.data match {
+      case BroadcastRequestData.Broadcast(message) =>
+        serviceContext.messages.update(ms => (ms :+ message).sorted.distinct).map { _ =>
+          Some(
+            BroadcastSharedData.AckBroadcast(
+              inReplyTo = request.messageId,
             )
           )
-        )
+        }
 
-      case BroadcastRequestBody.Read(messageId) =>
-        for {
-          id <- serviceContext.counter.getAndUpdate(_ + 1)
-          ms <- serviceContext.messages.get
-        } yield Some(
-          Response(
-            source = request.destination,
-            destination = request.source,
-            body = BroadcastResponseBody.Read(
-              messageId = id,
-              inReplyTo = messageId,
+      case BroadcastRequestData.Read =>
+        serviceContext.messages.get.map { ms =>
+          Some(
+            BroadcastSharedData.AckRead(
+              inReplyTo = request.messageId,
               messages = ms,
             )
           )
-        )
+        }
 
-      case BroadcastRequestBody.AckRead(_, _, messages) =>
+      case BroadcastSharedData.AckRead( _, messages) =>
         serviceContext.messages.update(ms => (ms ++ messages).sorted.distinct)
           .map(_ => None)
 
-      case BroadcastRequestBody.Topology(messageId, topology) =>
-        for {
-          id <- serviceContext.counter.getAndUpdate(_ + 1)
-          _  <- serviceContext.topology.set(topology)
-        } yield Some(
-          Response(
-            source = request.destination,
-            destination = request.source,
-            body = BroadcastResponseBody.Topology(
-              messageId = id,
-              inReplyTo = messageId,
+      case BroadcastRequestData.Topology(topology) =>
+        serviceContext.topology.set(topology).map { _ =>
+          Some(
+            BroadcastResponseData.AckTopology(
+              inReplyTo = request.messageId,
             )
           )
-        )
-
-      case BroadcastRequestBody.AckBroadcast(_, _) =>
+        }
+      case BroadcastSharedData.AckBroadcast(_) =>
         IO.pure(None)
+
     }
 
 }
