@@ -3,6 +3,7 @@ package storm.kafka.event
 import io.circe.*
 import io.circe.syntax.*
 import storm.model.*
+import storm.kafka.model.*
 
 type KafkaResponse = Response[KafkaResponseBody]
 
@@ -25,7 +26,7 @@ object KafkaResponseBody {
   case class Send(
     messageId: Long,
     inReplyTo: Long,
-    offset: Int,
+    offset: Offset,
   ) extends KafkaResponseBody {
     override final val tpe: String = "send_ok"
   }
@@ -40,7 +41,7 @@ object KafkaResponseBody {
   case class Poll(
     messageId: Long,
     inReplyTo: Long,
-    messages: Map[String, Vector[(Int, Option[Int])]],
+    messages: Map[Partition, Vector[(Offset, Message)]],
   ) extends KafkaResponseBody {
     override final val tpe: String = "poll_ok"
   }
@@ -69,7 +70,7 @@ object KafkaResponseBody {
   case class ListCommittedOffsets(
     messageId: Long,
     inReplyTo: Long,
-    offsets: Map[String, Int],
+    offsets: Map[Partition, Offset],
   ) extends KafkaResponseBody {
     override final val tpe: String = "list_committed_offsets_ok"
   }

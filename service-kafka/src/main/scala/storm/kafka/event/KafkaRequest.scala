@@ -2,6 +2,7 @@ package storm.kafka.event
 
 import io.circe.*
 import storm.model.*
+import storm.kafka.model.*
 
 type KafkaRequest = Request[KafkaRequestBody]
 
@@ -27,8 +28,8 @@ object KafkaRequestBody {
 
   case class Send(
     messageId: Long,
-    key: String,
-    message: Option[Int],
+    partition: Partition,
+    message: Message,
   ) extends KafkaRequestBody {
     override final val tpe: String = "send"
   }
@@ -36,17 +37,17 @@ object KafkaRequestBody {
   given Decoder[Send] =
     for {
       messageId <- Decoders.messageId
-      key       <- Decoder[String].at("key")
-      message   <- Decoder[Option[Int]].at("msg")
+      key       <- Decoder[Partition].at("key")
+      message   <- Decoder[Message].at("msg")
     } yield Send(
       messageId = messageId,
-      key = key,
+      partition = key,
       message = message,
     )
 
   case class Poll(
     messageId: Long,
-    offsets: Map[String, Int],
+    offsets: Map[Partition, Offset],
   ) extends KafkaRequestBody {
     override final val tpe: String = "poll"
   }
@@ -54,7 +55,7 @@ object KafkaRequestBody {
   given Decoder[Poll] =
     for {
       messageId <- Decoders.messageId
-      offsets   <- Decoder[Map[String, Int]].at("offsets")
+      offsets   <- Decoder[Map[Partition, Offset]].at("offsets")
     } yield Poll(
       messageId = messageId,
       offsets = offsets,
@@ -62,7 +63,7 @@ object KafkaRequestBody {
 
   case class CommitOffsets(
     messageId: Long,
-    offsets: Map[String, Int],
+    offsets: Map[Partition, Offset],
   ) extends KafkaRequestBody {
     override final val tpe: String = "commit_offsets"
   }
@@ -70,7 +71,7 @@ object KafkaRequestBody {
   given Decoder[CommitOffsets] =
     for {
       messageId <- Decoders.messageId
-      offsets   <- Decoder[Map[String, Int]].at("offsets")
+      offsets   <- Decoder[Map[Partition, Offset]].at("offsets")
     } yield CommitOffsets(
       messageId = messageId,
       offsets = offsets,
@@ -78,18 +79,18 @@ object KafkaRequestBody {
 
   case class ListCommittedOffsets(
     messageId: Long,
-    keys: Vector[String],
+    partitions: Vector[Partition],
   ) extends KafkaRequestBody {
     override final val tpe: String = "list_committed_offsets"
   }
 
   given Decoder[ListCommittedOffsets] =
     for {
-      messageId <- Decoders.messageId
-      keys      <- Decoder[Vector[String]].at("keys")
+      messageId  <- Decoders.messageId
+      partitions <- Decoder[Vector[Partition]].at("keys")
     } yield ListCommittedOffsets(
       messageId = messageId,
-      keys = keys,
+      partitions = partitions,
     )
 
 }

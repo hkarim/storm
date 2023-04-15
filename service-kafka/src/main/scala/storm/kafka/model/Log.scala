@@ -1,24 +1,25 @@
 package storm.kafka.model
 
 case class Log(
-  key: String,
-  offset: Int,                     // last offset
-  messages: Map[Int, Option[Int]], // offset -> message
+  partition: Partition,
+  offset: Offset, // last offset
+  messages: Map[Offset, Message],
 )
 
-extension (self: Log) {
+object Log {
+  extension (self: Log) {
 
-  def append(message: Option[Int]): Log = {
-    val lastOffset = self.offset + 1
-    self.copy(
-      offset = lastOffset,
-      messages = self.messages.updated(lastOffset, message)
-    )
+    def append(message: Message): Log = {
+      val lastOffset = self.offset.increment
+      self.copy(
+        offset = lastOffset,
+        messages = self.messages.updated(lastOffset, message)
+      )
+    }
+
+    def poll(offset: Offset): Vector[(Offset, Message)] =
+      self.messages
+        .filter { case (o, _) => o.value >= offset.value }
+        .toVector
   }
-
-  def query(offset: Int): Vector[(Int, Option[Int])] =
-    self.messages
-      .filter { case (o, _) => o >= offset }
-      .toVector
-
 }

@@ -1,37 +1,33 @@
 package storm.kafka.model
 
-opaque type Replica = Map[String, Log]
+opaque type Replica = Map[Partition, Log]
 
 object Replica {
 
-  def empty: Replica = Map.empty[String, Log]
+  def empty: Replica = Map.empty[Partition, Log]
 
   extension (self: Replica) {
 
-    def put(key: String, message: Option[Int]): (Replica, Int) =
-      self.get(key) match {
+    def put(partition: Partition, message: Message): (Replica, Offset) =
+      self.get(partition) match {
         case Some(log) =>
           val modifiedLog     = log.append(message)
-          val modifiedReplica = self.updated(key, modifiedLog)
-          // System.err.println(s"[Replica::put] (key found) returning => key: $key, log: $modifiedLog")
+          val modifiedReplica = self.updated(partition, modifiedLog)
           (modifiedReplica, modifiedLog.offset)
         case None =>
-          val newLog          = Log(key, 1, Map(1 -> message))
-          val modifiedReplica = self.updated(key, newLog)
-          // System.err.println(s"[Replica::put] (key not found) returning => key: $key, log: $newLog")
+          val newLog          = Log(partition, Offset.one, Map(Offset.one -> message))
+          val modifiedReplica = self.updated(partition, newLog)
           (modifiedReplica, newLog.offset)
       }
 
-    def poll(offsets: Map[String, Int]): Map[String, Vector[(Int, Option[Int])]] =
-      offsets.foldLeft(Map.empty[String, Vector[(Int, Option[Int])]]) { (acc, next) =>
-        val (key, offset) = next
-        self.get(key) match {
+    def poll(offsets: Map[Partition, Offset]): Map[Partition, Vector[(Offset, Message)]] =
+      offsets.foldLeft(Map.empty[Partition, Vector[(Offset, Message)]]) { (acc, next) =>
+        val (partition, offset) = next
+        self.get(partition) match {
           case Some(log) =>
-            val messages = log.query(offset)
-            // System.err.println(s"[Replica::poll] (key found) returning => key: $key, messages: $messages")
-            acc.updated(key, messages)
+            val messages = log.poll(offset)
+            acc.updated(partition, messages)
           case None =>
-            // System.err.println(s"[Replica::poll] (key found) returning => key: $key")
             acc
         }
       }

@@ -1,20 +1,20 @@
 package storm.kafka.model
 
-opaque type Commits = Map[String, Int]
+opaque type Commits = Map[Partition, Offset]
 
 object Commits {
 
-  def empty: Commits = Map.empty[String, Int]
+  def empty: Commits = Map.empty[Partition, Offset]
 
   extension (self: Commits) {
-    def commit(offsets: Map[String, Int]): Commits =
+    def commit(offsets: Map[Partition, Offset]): Commits =
       self ++ offsets
 
-    def list(keys: Vector[String]): Map[String, Int] =
-      keys.foldLeft(Map.empty[String, Int]) { (acc, key) =>
-        self.get(key) match {
+    def list(partitions: Vector[Partition]): Map[Partition, Offset] =
+      partitions.foldLeft(Map.empty[Partition, Offset]) { (acc, partition) =>
+        self.get(partition) match {
           case Some(offset) =>
-            acc.updated(key, offset)
+            acc.updated(partition, offset)
           case None =>
             acc
         }
