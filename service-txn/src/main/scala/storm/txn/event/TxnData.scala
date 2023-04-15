@@ -49,7 +49,7 @@ object TxnRequestData {
     final val Type: String = "pull"
 
     given Encoder[Pull.type] =
-      Encoder.instance[Pull.type] { v =>
+      Encoder.instance[Pull.type] { _ =>
         Json.obj()
       }
 
