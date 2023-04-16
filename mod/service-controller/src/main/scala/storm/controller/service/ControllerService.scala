@@ -10,7 +10,8 @@ class ControllerService(serviceContext: ControllerServiceContext) {
     case network: OperationMode.Network =>
       NetworkService
         .instance(serviceContext)
-        .run(network)
+        .resource(network)
+        .useForever
   }
 
 }

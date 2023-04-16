@@ -1,7 +1,7 @@
 package storm.controller.node
 
 import cats.effect.*
-import cats.effect.std.{Queue, Supervisor}
+import cats.effect.std.Queue
 import io.circe.{Json, parser}
 import fs2.*
 import fs2.io.process.*
@@ -36,19 +36,15 @@ class NodeProcess(serviceContext: ControllerServiceContext) {
       .compile
       .drain
 
-  def run(id: String, network: OperationMode.Network): IO[Node] =
-    ProcessBuilder(network.process).spawn[IO].use { process =>
-      Supervisor[IO](await = true).use { supervisor =>
-        for {
-          input  <- Queue.unbounded[IO, Json]
-          output <- Queue.unbounded[IO, Json]
-          node = Node(id, process, input, output)
-          _ <- supervisor.supervise(inputStream(node))
-          _ <- supervisor.supervise(outputStream(node))
-        } yield node
-      }
-
-    }
+  def resource(id: String, network: OperationMode.Network): Resource[IO, Node] =
+    for {
+      process <- ProcessBuilder(network.process).spawn[IO]
+      input   <- Resource.eval(Queue.unbounded[IO, Json])
+      output  <- Resource.eval(Queue.unbounded[IO, Json])
+      node = Node(id, process, input, output)
+      _ <- inputStream(node).background
+      _ <- outputStream(node).background
+    } yield node
 }
 
 object NodeProcess {
