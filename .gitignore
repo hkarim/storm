@@ -10,5 +10,4 @@ target
 .env
 *.env
 *.bkp
-opt
 store

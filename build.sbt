@@ -99,7 +99,7 @@ lazy val `service-kafka` = project
   .settings(List(Compile / mainClass := Some("storm.kafka.Service")))
 
 lazy val `service-txn` = project
-  .in(file("service-txn"))
+  .in(file("mod/service-txn"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
