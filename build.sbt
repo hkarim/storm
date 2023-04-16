@@ -32,12 +32,12 @@ lazy val storm = project
   .aggregate(`service-txn`)
 
 lazy val `lib-common-model` = project
-  .in(file("lib-common-model"))
+  .in(file("lib/lib-common-model"))
   .settings(commonSettings)
   .settings(libraryDependencies ++= Lib.circe)
 
 lazy val `lib-common-node` = project
-  .in(file("lib-common-node"))
+  .in(file("lib/lib-common-node"))
   .settings(commonSettings)
   .settings(
     name := "lib-common-node",
@@ -49,7 +49,7 @@ lazy val `lib-common-node` = project
   .dependsOn(`lib-common-model`)
 
 lazy val `service-echo` = project
-  .in(file("service-echo"))
+  .in(file("mod/service-echo"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -59,7 +59,7 @@ lazy val `service-echo` = project
   .settings(List(Compile / mainClass := Some("storm.echo.Service")))
 
 lazy val `service-broadcast` = project
-  .in(file("service-broadcast"))
+  .in(file("mod/service-broadcast"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -69,7 +69,7 @@ lazy val `service-broadcast` = project
   .settings(List(Compile / mainClass := Some("storm.broadcast.Service")))
 
 lazy val `service-unique-id` = project
-  .in(file("service-unique-id"))
+  .in(file("mod/service-unique-id"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -79,7 +79,7 @@ lazy val `service-unique-id` = project
   .settings(List(Compile / mainClass := Some("storm.unique.Service")))
 
 lazy val `service-counter` = project
-  .in(file("service-counter"))
+  .in(file("mod/service-counter"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -89,7 +89,7 @@ lazy val `service-counter` = project
   .settings(List(Compile / mainClass := Some("storm.counter.Service")))
 
 lazy val `service-kafka` = project
-  .in(file("service-kafka"))
+  .in(file("mod/service-kafka"))
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(

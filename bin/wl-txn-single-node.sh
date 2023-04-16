@@ -1,8 +1,8 @@
-#!/bin/zsh
+#!/usr/bin/env sh
 opt/maelstrom/maelstrom \
 test \
 -w txn-rw-register \
---bin service-txn/target/universal/stage/bin/service-txn \
+--bin mod/service-txn/target/universal/stage/bin/service-txn \
 --node-count 1 \
 --time-limit 20 \
 --rate 1000 \
