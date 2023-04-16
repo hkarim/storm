@@ -8,13 +8,14 @@ object Lib {
     val catsEffect = "3.5.0-RC3"
     val circe      = "0.14.5"
     val fs2        = "3.7.0-RC4"
+    val decline    = "2.4.1"
   }
 
   val config: List[ModuleID] = List(
     "com.typesafe" % "config" % Version.config
   )
 
-  val circe: Seq[ModuleID] = List(
+  val circe: List[ModuleID] = List(
     "io.circe" %% "circe-core"    % Version.circe,
     "io.circe" %% "circe-parser"  % Version.circe
   )
@@ -23,9 +24,13 @@ object Lib {
     "org.typelevel" %% "cats-effect" % Version.catsEffect
   )
 
-  val fs2: Seq[ModuleID] = List(
+  val fs2: List[ModuleID] = List(
     "co.fs2" %% "fs2-core" % Version.fs2,
     "co.fs2" %% "fs2-io"   % Version.fs2,
+  )
+
+  val decline: List[ModuleID] = List(
+    "com.monovore" %% "decline-effect" % Version.decline
   )
 
 }

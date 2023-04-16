@@ -24,6 +24,7 @@ lazy val storm = project
   )
   .aggregate(`lib-common-model`)
   .aggregate(`lib-common-node`)
+  .aggregate(`service-controller`)
   .aggregate(`service-echo`)
   .aggregate(`service-unique-id`)
   .aggregate(`service-broadcast`)
@@ -47,6 +48,19 @@ lazy val `lib-common-node` = project
         Lib.fs2
   )
   .dependsOn(`lib-common-model`)
+
+lazy val `service-controller` = project
+  .in(file("mod/service-controller"))
+  .enablePlugins(JavaAppPackaging)
+  .settings(commonSettings)
+  .settings(
+    name := "service-controller",
+  )
+  .settings(
+    libraryDependencies ++= Lib.decline,
+  )
+  .dependsOn(`lib-common-node`)
+  .settings(List(Compile / mainClass := Some("storm.controller.Service")))
 
 lazy val `service-echo` = project
   .in(file("mod/service-echo"))
