@@ -30,7 +30,7 @@ class BroadcastNodeStream(serviceContext: BroadcastServiceContext)
           )
         }
 
-      case BroadcastSharedData.AckRead( _, messages) =>
+      case BroadcastSharedData.AckRead(_, messages) =>
         serviceContext.messages.update(ms => (ms ++ messages).sorted.distinct)
           .map(_ => None)
 

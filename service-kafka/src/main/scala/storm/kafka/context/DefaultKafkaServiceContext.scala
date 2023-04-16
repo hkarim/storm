@@ -2,6 +2,7 @@ package storm.kafka.context
 
 import cats.effect.*
 import cats.effect.std.{Queue, Supervisor}
+import com.typesafe.config.{Config, ConfigFactory}
 import io.circe.Json
 import storm.context.NodeState
 import storm.kafka.model.*
@@ -9,6 +10,7 @@ import storm.kafka.service.KafkaNodeStream
 import storm.service.{InitService, StdinStream, StdoutStream}
 
 class DefaultKafkaServiceContext(
+  val config: Config,
   val state: NodeState,
   val counter: Ref[IO, Long],
   val inbound: Queue[IO, Json],
@@ -20,6 +22,7 @@ class DefaultKafkaServiceContext(
 object DefaultKafkaServiceContext {
   def run: IO[Unit] =
     Supervisor[IO].use { supervisor =>
+      val config: Config = ConfigFactory.load()
       for {
         inbound  <- Queue.unbounded[IO, Json]
         outbound <- Queue.unbounded[IO, Json]
@@ -30,6 +33,7 @@ object DefaultKafkaServiceContext {
         replica  <- Ref.of[IO, Replica](Replica.empty)
         commits  <- Ref.of[IO, Commits](Commits.empty)
         serviceContext = new DefaultKafkaServiceContext(
+          config = config,
           state = state,
           counter = counter,
           inbound = inbound,

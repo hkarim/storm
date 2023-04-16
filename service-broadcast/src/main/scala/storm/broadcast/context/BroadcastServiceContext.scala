@@ -2,12 +2,14 @@ package storm.broadcast.context
 
 import cats.effect.*
 import cats.effect.std.{Queue, Supervisor}
+import com.typesafe.config.{Config, ConfigFactory}
 import io.circe.Json
 import storm.broadcast.service.*
 import storm.context.{NodeState, ServiceContext}
 import storm.service.{InitService, StdinStream, StdoutStream}
 
 class BroadcastServiceContext(
+  val config: Config,
   val state: NodeState,
   val counter: Ref[IO, Long],
   val messages: Ref[IO, Vector[Int]],
@@ -19,6 +21,7 @@ class BroadcastServiceContext(
 object BroadcastServiceContext {
   def run: IO[Unit] =
     Supervisor[IO].use { supervisor =>
+      val config: Config = ConfigFactory.load()
       for {
         inbound  <- Queue.unbounded[IO, Json]
         outbound <- Queue.unbounded[IO, Json]
@@ -29,6 +32,7 @@ object BroadcastServiceContext {
         messages <- Ref.of[IO, Vector[Int]](Vector.empty)
         topology <- Ref.of[IO, Map[String, List[String]]](Map.empty)
         serviceContext = new BroadcastServiceContext(
+          config = config,
           state = state,
           counter = counter,
           messages = messages,

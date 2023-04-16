@@ -3,12 +3,19 @@ package storm.txn.model
 import io.circe.*
 import io.circe.syntax.*
 
-enum Operation {
-  case Read
-  case Write
-}
+// enums doesn't work currently in 3.3.0-RC3
+// https://github.com/lampepfl/dotty/issues/16878
+//enum Operation {
+//  case Read
+//  case Write
+//}
+
+sealed trait Operation
 
 object Operation {
+  case object Read  extends Operation
+  case object Write extends Operation
+
   given Encoder[Operation] =
     Encoder.instance[Operation] {
       case Operation.Read  => "r".asJson

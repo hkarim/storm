@@ -2,12 +2,14 @@ package storm.unique.context
 
 import cats.effect.*
 import cats.effect.std.{Queue, Supervisor}
+import com.typesafe.config.{Config, ConfigFactory}
 import io.circe.Json
-import storm.context.{NodeState, ServiceContext}
-import storm.unique.service.UniqueNodeStream
+import storm.context.NodeState
 import storm.service.{InitService, StdinStream, StdoutStream}
+import storm.unique.service.UniqueNodeStream
 
 class DefaultUniqueServiceContext(
+  val config: Config,
   val state: NodeState,
   val counter: Ref[IO, Long],
   val inbound: Queue[IO, Json],
@@ -18,6 +20,7 @@ class DefaultUniqueServiceContext(
 object DefaultUniqueServiceContext {
   def run: IO[Unit] =
     Supervisor[IO].use { supervisor =>
+      val config: Config = ConfigFactory.load()
       for {
         inbound  <- Queue.unbounded[IO, Json]
         outbound <- Queue.unbounded[IO, Json]
@@ -27,6 +30,7 @@ object DefaultUniqueServiceContext {
         counter  <- Ref.of[IO, Long](1L)
         unique   <- Ref.of[IO, Long](1L)
         serviceContext = new DefaultUniqueServiceContext(
+          config = config,
           state = state,
           counter = counter,
           inbound = inbound,

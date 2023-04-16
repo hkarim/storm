@@ -1,13 +1,13 @@
 package storm.unique.service
 
 import cats.effect.*
-import storm.context.*
-import storm.unique.event.*
 import storm.model.*
 import storm.service.NodeStream
 import storm.unique.context.UniqueServiceContext
+import storm.unique.event.*
 
-class UniqueNodeStream(serviceContext: UniqueServiceContext) extends NodeStream[UniqueRequestData.type, UniqueResponseData](serviceContext) {
+class UniqueNodeStream(serviceContext: UniqueServiceContext)
+  extends NodeStream[UniqueRequestData.type, UniqueResponseData](serviceContext) {
 
   def onRequest(request: Message[UniqueRequestData.type]): IO[Option[UniqueResponseData]] =
     serviceContext.unique.getAndUpdate(_ + 1).map { u =>

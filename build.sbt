@@ -9,7 +9,7 @@ lazy val commonSettings = List(
     "-feature",
     "-no-indent",
     "-Xfatal-warnings",
-    //"-Wunused:all",
+    "-Wunused:all",
     "-Wvalue-discard",
   ),
   // Test / parallelExecution := true,
@@ -42,6 +42,7 @@ lazy val `lib-common-node` = project
   .settings(
     name := "lib-common-node",
     libraryDependencies ++=
+      Lib.config ++
         Lib.catsEffect ++
         Lib.fs2
   )
@@ -53,12 +54,6 @@ lazy val `service-echo` = project
   .settings(commonSettings)
   .settings(
     name := "service-echo",
-    libraryDependencies ++=
-      Lib.logback ++
-        Lib.scalaLogging ++
-        Lib.config ++
-        Lib.catsEffect ++
-        Lib.fs2
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.echo.Service")))
@@ -69,12 +64,6 @@ lazy val `service-broadcast` = project
   .settings(commonSettings)
   .settings(
     name := "service-broadcast",
-    libraryDependencies ++=
-      Lib.logback ++
-        Lib.scalaLogging ++
-        Lib.config ++
-        Lib.catsEffect ++
-        Lib.fs2
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.broadcast.Service")))
@@ -85,12 +74,6 @@ lazy val `service-unique-id` = project
   .settings(commonSettings)
   .settings(
     name := "service-unique-id",
-    libraryDependencies ++=
-      Lib.logback ++
-        Lib.scalaLogging ++
-        Lib.config ++
-        Lib.catsEffect ++
-        Lib.fs2
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.unique.Service")))
@@ -101,12 +84,6 @@ lazy val `service-counter` = project
   .settings(commonSettings)
   .settings(
     name := "service-counter",
-    libraryDependencies ++=
-      Lib.logback ++
-        Lib.scalaLogging ++
-        Lib.config ++
-        Lib.catsEffect ++
-        Lib.fs2
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.counter.Service")))
@@ -117,12 +94,6 @@ lazy val `service-kafka` = project
   .settings(commonSettings)
   .settings(
     name := "service-kafka",
-    libraryDependencies ++=
-      Lib.logback ++
-        Lib.scalaLogging ++
-        Lib.config ++
-        Lib.catsEffect ++
-        Lib.fs2
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.kafka.Service")))
@@ -133,12 +104,6 @@ lazy val `service-txn` = project
   .settings(commonSettings)
   .settings(
     name := "service-txn",
-    libraryDependencies ++=
-      Lib.logback ++
-        Lib.scalaLogging ++
-        Lib.config ++
-        Lib.catsEffect ++
-        Lib.fs2
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.txn.Service")))

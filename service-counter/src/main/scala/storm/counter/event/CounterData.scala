@@ -151,7 +151,7 @@ object CounterSharedData {
     given Decoder[AckPull] =
       for {
         inReplyTo <- Message.Decoders.inReplyTo
-        value <- Decoder[Map[String, Int]].at("value")
+        value     <- Decoder[Map[String, Int]].at("value")
       } yield AckPull(
         inReplyTo = inReplyTo,
         value = value,
@@ -159,5 +159,3 @@ object CounterSharedData {
 
   }
 }
-
-

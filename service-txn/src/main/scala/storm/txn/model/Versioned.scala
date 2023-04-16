@@ -1,6 +1,5 @@
 package storm.txn.model
 import io.circe.*
-import io.circe.syntax.*
 
 sealed trait Versioned {
   def version: Int

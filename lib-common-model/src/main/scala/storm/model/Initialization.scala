@@ -1,7 +1,6 @@
 package storm.model
 
 import io.circe.*
-import io.circe.syntax.*
 
 case class InitializationRequestData(nodeId: String, nodeIds: List[String])
 

@@ -1,7 +1,6 @@
 package storm.txn.model
 
 import io.circe.*
-import io.circe.syntax.*
 
 case class Record(
   operation: Operation,

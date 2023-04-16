@@ -7,7 +7,7 @@ case class EchoRequestData(echo: String)
 
 object EchoRequestData {
   final val Type: String = "echo"
-  
+
   given DataType[EchoRequestData] =
     DataType.instance(_ => Type)
 

@@ -2,6 +2,7 @@ package storm.txn.context
 
 import cats.effect.*
 import cats.effect.std.*
+import com.typesafe.config.{Config, ConfigFactory}
 import io.circe.Json
 import storm.context.NodeState
 import storm.service.*
@@ -9,6 +10,7 @@ import storm.txn.model.Store
 import storm.txn.service.{PullStream, TxnNodeStream}
 
 class DefaultTxnServiceContext(
+  val config: Config,
   val state: NodeState,
   val counter: Ref[IO, Long],
   val inbound: Queue[IO, Json],
@@ -19,6 +21,7 @@ class DefaultTxnServiceContext(
 object DefaultTxnServiceContext {
   def run: IO[Unit] =
     Supervisor[IO].use { supervisor =>
+      val config: Config = ConfigFactory.load()
       for {
         inbound  <- Queue.unbounded[IO, Json]
         outbound <- Queue.unbounded[IO, Json]
@@ -28,6 +31,7 @@ object DefaultTxnServiceContext {
         counter  <- Ref.of[IO, Long](1L)
         store    <- Ref.of[IO, Store](Store.empty)
         serviceContext = new DefaultTxnServiceContext(
+          config = config,
           state = state,
           counter = counter,
           inbound = inbound,
