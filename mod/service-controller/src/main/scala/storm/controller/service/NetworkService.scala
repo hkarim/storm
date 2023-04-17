@@ -45,8 +45,8 @@ class NetworkService(serviceContext: ControllerServiceContext) {
       _ <- Resource.eval(send)
       // spawn a handler stream for each node
       _ <- nodes.traverse { node =>
-        EchoStream
-          .run(id, serviceContext.counter, node)
+        RouterStream
+          .run(nodes, node)
           .background
       }
     } yield nodes

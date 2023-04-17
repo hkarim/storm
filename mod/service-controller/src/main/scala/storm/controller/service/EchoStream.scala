@@ -19,7 +19,6 @@ object EchoStream {
             echo = s"$duration"
           )
         }
-
       }
       .evalMap(node.input.offer)
       .compile

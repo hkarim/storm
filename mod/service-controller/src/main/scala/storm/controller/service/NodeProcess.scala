@@ -19,7 +19,7 @@ class NodeProcess(serviceContext: ControllerServiceContext) {
       .interruptWhen(node.signal)
       .map(_.noSpaces)
       .evalTap { line =>
-        Console[IO].println(s"[${node.id}::request] $line")
+        Console[IO].println(s"[${node.id}::in] $line")
       }
       .map(line => s"$line\n")
       .through(fs2.text.utf8.encode[IO])
@@ -33,7 +33,7 @@ class NodeProcess(serviceContext: ControllerServiceContext) {
       .through(fs2.text.utf8.decode[IO])
       .through(fs2.text.lines[IO])
       .evalTap { line =>
-        Console[IO].println(s"[${node.id}::response] $line")
+        Console[IO].println(s"[${node.id}::out] $line")
       }
       .evalMap { line =>
         IO.fromEither {
