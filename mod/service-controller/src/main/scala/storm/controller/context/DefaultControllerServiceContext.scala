@@ -14,12 +14,15 @@ object DefaultControllerServiceContext {
   def run(command: OperationMode): IO[Unit] = {
     val config: Config = ConfigFactory.load()
     for {
-      counter  <- Ref.of[IO, Long](1L)
+      counter <- Ref.of[IO, Long](1L)
       serviceContext = new DefaultControllerServiceContext(
         config = config,
         counter = counter,
       )
-      controller <- ControllerService.instance(serviceContext).run(command)
+      controller <- ControllerService
+        .instance(serviceContext)
+        .run(command)
+        .useForever
     } yield controller
   }
 }

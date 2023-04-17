@@ -12,7 +12,7 @@ class StdoutStream(outbound: Queue[IO, Json]) {
       .map { json =>
         s"${json.noSpaces}\n"
       }
-      .evalTap(response => Console[IO].errorln(s"[response] $response"))
+      // .evalTap(response => Console[IO].errorln(s"[response] $response"))
       .through(fs2.text.utf8.encode[IO])
       .through(fs2.io.stdout[IO])
       .compile

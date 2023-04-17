@@ -17,7 +17,8 @@ object Lib {
 
   val circe: List[ModuleID] = List(
     "io.circe" %% "circe-core"    % Version.circe,
-    "io.circe" %% "circe-parser"  % Version.circe
+    "io.circe" %% "circe-parser"  % Version.circe,
+    "io.circe" %% "circe-literal"  % Version.circe
   )
 
   val catsEffect: List[ModuleID] = List(

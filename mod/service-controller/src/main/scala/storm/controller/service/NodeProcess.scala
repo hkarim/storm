@@ -1,12 +1,13 @@
-package storm.controller.node
+package storm.controller.service
 
 import cats.effect.*
-import cats.effect.std.Queue
+import cats.effect.std.*
 import io.circe.{Json, parser}
 import fs2.*
+import fs2.concurrent.SignallingRef
 import fs2.io.process.*
 import storm.controller.context.ControllerServiceContext
-import storm.controller.model.OperationMode
+import storm.controller.model.{Node, OperationMode}
 
 class NodeProcess(serviceContext: ControllerServiceContext) {
 
@@ -15,9 +16,12 @@ class NodeProcess(serviceContext: ControllerServiceContext) {
   private def inputStream(node: Node): IO[Unit] =
     Stream
       .fromQueueUnterminated(node.input)
-      .map { json =>
-        s"${json.noSpaces}\n"
+      .interruptWhen(node.signal)
+      .map(_.noSpaces)
+      .evalTap { line =>
+        Console[IO].println(s"[${node.id}::request] $line")
       }
+      .map(line => s"$line\n")
       .through(fs2.text.utf8.encode[IO])
       .through(node.process.stdin)
       .compile
@@ -25,14 +29,30 @@ class NodeProcess(serviceContext: ControllerServiceContext) {
 
   private def outputStream(node: Node): IO[Unit] =
     node.process.stdout
+      .interruptWhen(node.signal)
       .through(fs2.text.utf8.decode[IO])
       .through(fs2.text.lines[IO])
+      .evalTap { line =>
+        Console[IO].println(s"[${node.id}::response] $line")
+      }
       .evalMap { line =>
         IO.fromEither {
           parser.parse(line)
         }
       }
-      .evalMap(node.output.tryOffer)
+      .evalMap(node.output.offer)
+      .compile
+      .drain
+
+  private def errorStream(node: Node): IO[Unit] =
+    node.process.stderr
+      .interruptWhen(node.signal)
+      .through(fs2.text.utf8.decode[IO])
+      .through(fs2.text.lines[IO])
+      .evalTap { line =>
+        Console[IO].println(s"[${node.id}::error] $line")
+      }
+      .evalMap(node.error.offer)
       .compile
       .drain
 
@@ -41,9 +61,19 @@ class NodeProcess(serviceContext: ControllerServiceContext) {
       process <- ProcessBuilder(network.process).spawn[IO]
       input   <- Resource.eval(Queue.unbounded[IO, Json])
       output  <- Resource.eval(Queue.unbounded[IO, Json])
-      node = Node(id, process, input, output)
+      error   <- Resource.eval(Queue.unbounded[IO, String])
+      signal  <- Resource.eval(SignallingRef.of[IO, Boolean](false))
+      node = Node(
+        id = id,
+        process = process,
+        signal = signal,
+        input = input,
+        output = output,
+        error = error
+      )
       _ <- inputStream(node).background
       _ <- outputStream(node).background
+      _ <- errorStream(node).background
     } yield node
 }
 
