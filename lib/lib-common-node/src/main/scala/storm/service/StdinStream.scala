@@ -9,7 +9,6 @@ class StdinStream(inbound: Queue[IO, Json]) {
     fs2.io.stdin[IO](1024 * 64)
       .through(fs2.text.utf8.decode[IO])
       .through(fs2.text.lines[IO])
-      // .evalTap(request => Console[IO].errorln(s"[request] $request"))
       .evalMap { line =>
         IO.fromEither {
           parser.parse(line)

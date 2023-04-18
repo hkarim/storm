@@ -9,10 +9,7 @@ class StdoutStream(outbound: Queue[IO, Json]) {
   def run: IO[Unit] =
     fs2.Stream
       .fromQueueUnterminated(outbound)
-      .map { json =>
-        s"${json.noSpaces}\n"
-      }
-      // .evalTap(response => Console[IO].errorln(s"[response] $response"))
+      .map(json => s"${json.noSpaces}\n")
       .through(fs2.text.utf8.encode[IO])
       .through(fs2.io.stdout[IO])
       .compile
