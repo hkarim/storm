@@ -52,9 +52,16 @@ lazy val `lib-common-node` = project
 lazy val `service-controller` = project
   .in(file("mod/service-controller"))
   .enablePlugins(JavaAppPackaging)
+  .enablePlugins(GraalVMNativeImagePlugin)
   .settings(commonSettings)
   .settings(
     name := "service-controller",
+  )
+  .settings(
+    graalVMNativeImageOptions ++= List(
+      "-H:IncludeResources=(reference|application).conf$",
+      "--no-fallback",
+    )
   )
   .settings(
     libraryDependencies ++= Lib.decline,
@@ -75,9 +82,16 @@ lazy val `service-echo` = project
 lazy val `service-broadcast` = project
   .in(file("mod/service-broadcast"))
   .enablePlugins(JavaAppPackaging)
+  .enablePlugins(GraalVMNativeImagePlugin)
   .settings(commonSettings)
   .settings(
     name := "service-broadcast",
+  )
+  .settings(
+    graalVMNativeImageOptions ++= List(
+      "-H:IncludeResources=(reference|application).conf$",
+      "--no-fallback",
+    )
   )
   .dependsOn(`lib-common-node`)
   .settings(List(Compile / mainClass := Some("storm.broadcast.Service")))
