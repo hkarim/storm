@@ -40,7 +40,6 @@ object BroadcastServiceContext {
           inbound = inbound,
           outbound = outbound,
         )
-        _         <- supervisor.supervise(BroadcastNodeStream.instance(serviceContext).run)
         _         <- supervisor.supervise(ReadStream.instance(serviceContext).run)
         broadcast <- BroadcastNodeStream.instance(serviceContext).run
       } yield broadcast
